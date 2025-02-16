@@ -1,12 +1,10 @@
 import 'package:easy_bill_clean_architecture/core/widgets/text_card.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-
+import '../../features/domain/items/entity/item.dart';
 import '../constance/colors.dart';
 import '../constance/g_constants.dart';
 import '../constance/styles.dart';
-import '../models/item.dart';
 import 'custom_text_button.dart';
 import 'custom_text_field.dart';
 

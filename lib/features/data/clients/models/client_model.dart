@@ -1,20 +1,20 @@
 import '../../../domain/clients/model/client.dart';
 
 class ClientModel extends Client {
-  ClientModel(
-      {super.id,
-      required super.fullName,
-      super.email,
-      super.address,
-      super.phoNumber,
-      required phoneNumber});
+  ClientModel({
+    super.id,
+    required super.fullName,
+    super.email,
+    super.address,
+    super.phoneNumber,
+  });
 
   Map<String, dynamic> toMap() {
     return {
       'fullName': super.fullName,
       'address': super.address,
       'email': super.email,
-      'phoneNumber': super.phoNumber,
+      'phoneNumber': super.phoneNumber,
     };
   }
 
@@ -34,7 +34,7 @@ class ClientModel extends Client {
       fullName: client.fullName,
       address: client.address,
       email: client.email,
-      phoneNumber: client.phoNumber,
+      phoneNumber: client.phoneNumber,
     );
   }
 

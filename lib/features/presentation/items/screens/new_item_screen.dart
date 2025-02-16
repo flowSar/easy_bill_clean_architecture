@@ -1,10 +1,11 @@
+import 'package:easy_bill_clean_architecture/features/presentation/items/bloc/item_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/items/bloc/item_event.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import '../../../../core/constance/colors.dart';
 import '../../../../core/constance/g_constants.dart';
 import '../../../../core/constance/styles.dart';
-import '../../../../core/models/item.dart';
 import '../../../../core/utilities/functions.dart';
 import '../../../../core/utilities/scan_bard_code.dart';
 import '../../../../core/widgets/custom_Floating_button.dart';
@@ -14,6 +15,7 @@ import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/error_dialog.dart';
 import '../../../../core/widgets/text_card.dart';
 import '../../../../core/widgets/unit_widget.dart';
+import '../../../domain/items/entity/item.dart';
 
 final _formKey = GlobalKey<FormState>();
 
@@ -246,14 +248,16 @@ class _NewItemScreenState extends State<NewItemScreen> {
                       // check if the input is valid before submitting it
                       bool? valid = _formKey.currentState?.validate();
                       if (valid == true) {
-                        // Item newItem = generateNewItem();
+                        Item newItem = generateNewItem();
                         try {
                           // set loading state to true when we are going to submit data
                           updateLoadingStata(true);
 
                           if (mode == ScreenMode.navigate) {
                             // submit the new item to the database
-                            // context.read<DataProvider>().addItem(newItem);
+                            context
+                                .read<ItemBloc>()
+                                .add(AddItemEvent(item: newItem));
                             // after the submitting succeed remove all user input
                             displaySnackBar(
                                 'the Item was created successfully');
@@ -262,9 +266,10 @@ class _NewItemScreenState extends State<NewItemScreen> {
                           } else if (mode == ScreenMode.update) {
                             // this for updating the item if the mode is not navigate it's update
                             try {
-                              // context
-                              //     .read<DataProvider>()
-                              //     .updateItem(newItem, _id!);
+                              context.read<ItemBloc>().add(UpdateItemEvent(
+                                    item: newItem,
+                                    id: _id!,
+                                  ));
                               displaySnackBar('item was updated successfully');
                             } catch (e) {
                               displayErrorDialog(e);

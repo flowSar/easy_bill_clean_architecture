@@ -1,9 +1,12 @@
 import 'package:dartz/dartz.dart';
+import 'package:easy_bill_clean_architecture/core/error/failure.dart';
 import 'package:easy_bill_clean_architecture/features/domain/items/entity/item.dart';
 
-import '../../../../core/error/failure.dart';
+// abstract interface class ItemUseCase<T, Params> {
+//   Future<Either<Failure, T>> call(Params param);
+// }
 
-abstract interface class ItemRepository {
+abstract interface class ItemUseCases {
   Future<Either<Failure, int>> addItem(Item item);
 
   Future<Either<Failure, List<Item>>> getItems();
@@ -12,3 +15,5 @@ abstract interface class ItemRepository {
 
   Future<Either<Failure, int>> updateItem(Item item);
 }
+
+class NoParams {}

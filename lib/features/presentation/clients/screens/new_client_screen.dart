@@ -1,3 +1,4 @@
+import 'package:easy_bill_clean_architecture/features/data/clients/models/client_model.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/clients/bloc/client_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/clients/bloc/client_event.dart';
 import 'package:flutter/material.dart';
@@ -52,9 +53,9 @@ class _NewClientScreenState extends State<NewClientScreen> {
     if (widget.client != null) {
       clientId = widget.client!.id;
       _fullName.text = widget.client!.fullName;
-      _address.text = widget.client!.address!;
-      _email.text = widget.client!.email!;
-      _phoneNumber.text = widget.client!.phoNumber!;
+      _address.text = widget.client!.address ?? '';
+      _email.text = widget.client!.email ?? '';
+      _phoneNumber.text = widget.client!.phoneNumber ?? '';
       fullName = widget.client!.fullName;
     }
     super.initState();
@@ -162,10 +163,10 @@ class _NewClientScreenState extends State<NewClientScreen> {
                     onPressed: () async {
                       Client client = Client(
                         id: clientId,
-                        fullName: _fullName.text,
-                        address: _address.text,
-                        email: _email.text,
-                        phoNumber: _phoneNumber.text,
+                        fullName: _fullName.text.trim(),
+                        address: _address.text.trim(),
+                        email: _email.text.trim(),
+                        phoneNumber: _phoneNumber.text.trim(),
                       );
                       // validate use input
                       bool? valid = _formKey.currentState?.validate();
@@ -179,9 +180,6 @@ class _NewClientScreenState extends State<NewClientScreen> {
                             context
                                 .read<ClientBloc>()
                                 .add(AddClientEvent(client));
-                            // await context
-                            //     .read<DataProvider>()
-                            //     .addClients(client);
                             displaySnackBar(
                                 'The client was added successfully');
                             clearUserInput();

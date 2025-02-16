@@ -1,7 +1,10 @@
 import 'package:easy_bill_clean_architecture/features/presentation/clients/screens/clients_screen.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/invoices/screens/invoice_screen.dart';
+import 'package:easy_bill_clean_architecture/screens/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/constance/g_constants.dart';
+import '../features/presentation/invoices/screens/new_invoice_screen.dart';
 import '../features/presentation/items/screens/items_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
@@ -14,24 +17,15 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   int _screenIndex = 0;
   final List<Widget> screens = [
-    // NewInvoiceScreen(),
-    // InvoiceScreen(),
-    // ClientsScreen(
-    //   mode: ScreenMode.navigate,
-    // ),
+    NewInvoiceScreen(),
+    InvoiceScreen(),
     ClientsScreen(
       mode: ScreenMode.navigate,
     ),
-    ClientsScreen(
+    ItemsScreen(
       mode: ScreenMode.navigate,
     ),
-    ClientsScreen(
-      mode: ScreenMode.navigate,
-    ),
-    ClientsScreen(
-      mode: ScreenMode.navigate,
-    ),
-    // SettingsScreen(),
+    SettingsScreen(),
   ];
 
   void _handleItemTaped(int index) {

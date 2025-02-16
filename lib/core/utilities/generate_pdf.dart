@@ -6,7 +6,7 @@ import 'package:pdf/widgets.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:open_file/open_file.dart';
 
-import '../models/business_info.dart';
+import '../../features/domain/business_info/entity/business_info_entity.dart';
 import '../models/invoice.dart';
 
 // this class will generate a pdf bill from the data that will be provide to him

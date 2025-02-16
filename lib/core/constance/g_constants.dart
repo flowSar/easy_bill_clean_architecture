@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../../features/domain/clients/model/client.dart';
+import '../../features/domain/items/entity/item.dart';
 import '../models/item.dart';
 
 const kKeyEmailType = TextInputType.emailAddress;

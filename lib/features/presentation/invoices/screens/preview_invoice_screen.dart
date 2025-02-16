@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/constance/styles.dart';
-import '../../../../core/models/business_info.dart';
+import '../../../domain/business_info/entity/business_info_entity.dart';
 import '../../../../core/models/invoice.dart';
 import '../../../../core/utilities/generate_pdf.dart';
 import '../../../../core/widgets/bill_table_row.dart';

@@ -1,19 +1,22 @@
+import 'package:easy_bill_clean_architecture/features/domain/business_info/entity/business_info_entity.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/business_info/bloc/business_info_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/business_info/bloc/business_info_event.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/business_info/bloc/business_info_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
-
 import 'package:dotted_border/dotted_border.dart';
-
 import '../../../../core/constance/colors.dart';
 import '../../../../core/constance/g_constants.dart';
 import '../../../../core/constance/styles.dart';
 import '../../../../core/models/invoice.dart';
-import '../../../../core/models/item.dart';
 import '../../../../core/utilities/functions.dart';
 import '../../../../core/utilities/scan_bard_code.dart';
 import '../../../../core/widgets/custom_Floating_button.dart';
+import '../../../../core/widgets/custom_circular_progress.dart';
 import '../../../../core/widgets/custom_modal_Bottom_sheet.dart';
 import '../../../../core/widgets/empty.dart';
 import '../../../../core/widgets/error_dialog.dart';
@@ -21,6 +24,9 @@ import '../../../../core/widgets/select_item_button.dart';
 import '../../../../core/widgets/selected_item_card.dart';
 import '../../../../core/widgets/user_card.dart';
 import '../../../domain/clients/model/client.dart';
+import '../../../domain/invoices/entities/invoice.dart';
+import '../../../domain/invoices/entities/invoice_item.dart';
+import '../../../domain/items/entity/item.dart';
 import '../../items/screens/new_item_screen.dart';
 
 var uuid = Uuid();
@@ -47,30 +53,23 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
   late String date;
   late final String invoiceId;
   final bool notEmpty = false;
+  late BusinessInfo? businessInfo;
 
   @override
   void initState() {
     invoiceId = uuid.v4();
     loadBusinessInfo();
     // currency = context.read<SettingsProvider>().currency;
-
+    currency = 'dh';
     date = DateFormat('dd/MM/yyyy').format(now);
     super.initState();
   }
 
   Future loadBusinessInfo() async {
     try {
-      setState(() {
-        loading = true;
-      });
-      // await context.read<DataProvider>().loadBusinessInfo();
-      setState(() {
-        loading = false;
-      });
+      context.read<BusinessInfoBloc>().add(GetBusinessInfoEvent());
     } catch (e) {
-      setState(() {
-        loading = false;
-      });
+      showErrorDialog(context, 'businessInfo', 'business info loading failed');
     }
   }
 
@@ -106,7 +105,7 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
       double subTotal = 0.0;
       for (var item in selectedItems) {
         double? tax = item.tax;
-        subTotal = item.quantity * item.price;
+        subTotal = (item.quantity! * item.price);
         total += (subTotal + (subTotal * tax!) / 100) * 100;
       }
       return total / 100;
@@ -121,22 +120,22 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
       int index = 0;
       for (var item in selectedItems) {
         double tax = item.tax!;
-        double subtotal = item.price * item.quantity;
+        double subtotal = item.price * item.quantity!;
         double total = subtotal + (subtotal * tax) / 100;
         invoiceItems.add(InvoiceItem(
           name: item.name,
-          quantity: item.quantity,
+          quantity: item.quantity!,
           price: item.price,
           total: total,
-          tax: item.tax,
-          unit: item.unit,
+          tax: item.tax!,
+          unit: item.unit!,
           invoiceId: invoiceId,
         ));
         index++;
       }
       invoice = Invoice(
         id: invoiceId,
-        clientId: client?.id,
+        clientId: client!.id!,
         date: date,
         total: billTotal,
         invoiceNumber: 'NV00',
@@ -230,35 +229,37 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
                       },
                     ),
               // consumer for consuming the business info from the dataProviders
-              // Consumer<DataProvider>(builder: (context, dataProvider, child) {
-              //   // check is the loading data from database is still ongoing
-              //   if (loading) {
-              //     return CustomCircularProgress(
-              //       strokeWidth: 2,
-              //       h: 35,
-              //       w: 35,
-              //     );
-              //   } else {
-              //     final bInfo = dataProvider.businessInfo;
-              //     if (bInfo != null) {
-              //       return UserCard(
-              //           onPressed: () {
-              //             context.push('/businessScreen');
-              //           },
-              //           elevation: 2,
-              //           title: bInfo.businessName,
-              //           subTitle: bInfo.businessEmail!);
-              //     } else {
-              //       return SelectItemButton(
-              //         elevation: 2,
-              //         label: language.translate('Business Info'),
-              //         onPressed: () {
-              //           context.push('/businessScreen');
-              //         },
-              //       );
-              //     }
-              //   }
-              // }),
+              BlocBuilder<BusinessInfoBloc, BusinessInfoState>(
+                  builder: (context, state) {
+                if (state is BusinessInfoFailed) {
+                  return SelectItemButton(
+                    elevation: 2,
+                    label: 'Business Info',
+                    onPressed: () {
+                      context.push('/businessScreen');
+                    },
+                  );
+                }
+                if (state is BusinessInfoLoading) {
+                  return CustomCircularProgress(
+                    strokeWidth: 2,
+                    h: 35,
+                    w: 35,
+                  );
+                }
+                if (state is BusinessInfoLoaded) {
+                  businessInfo = state.businessInfo;
+                  return UserCard(
+                    onPressed: () {
+                      context.push('/businessScreen');
+                    },
+                    elevation: 2,
+                    title: businessInfo!.businessName,
+                    subTitle: businessInfo!.businessEmail!,
+                  );
+                }
+                return Text('loading...');
+              }),
               Expanded(
                 child: selectedItems.isNotEmpty
                     ? ListView.builder(
@@ -274,7 +275,7 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
                             bg: greyLight,
                             name: selectedItems[index].name,
                             barCode: selectedItems[index].barCode!,
-                            quantity: selectedItems[index].quantity,
+                            quantity: selectedItems[index].quantity!,
                             price: selectedItems[index].price,
                             tax: selectedItems[index].tax!,
                           );
@@ -444,7 +445,7 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
                           name: '',
                           price: 0,
                           quantity: 0,
-                          tax: '0',
+                          tax: 0.0,
                           description: null,
                           unit: null,
                           stock: null,

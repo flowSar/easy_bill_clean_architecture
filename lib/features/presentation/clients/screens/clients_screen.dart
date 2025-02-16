@@ -1,4 +1,5 @@
 import 'package:easy_bill_clean_architecture/core/widgets/error_dialog.dart';
+import 'package:easy_bill_clean_architecture/features/data/clients/models/client_model.dart';
 import 'package:easy_bill_clean_architecture/features/domain/clients/model/client.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/clients/bloc/client_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/clients/bloc/client_event.dart';
@@ -38,7 +39,6 @@ class _ClientsScreenState extends State<ClientsScreen> {
 
   @override
   void dispose() {
-    _searchKeyWord.dispose();
     super.dispose();
   }
 
@@ -126,6 +126,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                                     //     .deleteClient(clients[index].id!);
                                   },
                                   onTap: () {
+                                    print('select.......');
                                     if (widget.mode == ScreenMode.navigate ||
                                         widget.mode == ScreenMode.update) {
                                       context.push(
@@ -136,7 +137,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                                         ),
                                       );
                                     } else {
-                                      // context.pop(dataProvider.clients[index]);
+                                      context.pop(clients[index]);
                                     }
                                   },
                                 );
