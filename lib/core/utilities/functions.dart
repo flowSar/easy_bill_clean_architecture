@@ -1,5 +1,7 @@
+import 'package:easy_bill_clean_architecture/core/models/invoice.dart';
+import 'package:easy_bill_clean_architecture/features/domain/clients/model/client.dart';
+import 'package:easy_bill_clean_architecture/features/domain/invoices/entities/invoice.dart';
 import 'package:flutter/material.dart';
-
 import '../widgets/dialog_option.dart';
 
 bool isValidNumber(String str) {
@@ -47,6 +49,11 @@ void displaySaveInvoiceOption(
   );
 }
 
+Client getClientById(List<Client> clients, int id) {
+  final foundClient = clients.where((client) => client.id == id).toList();
+  return foundClient[0];
+}
+
 String formatNumber(int num) {
   if (num < 10) {
     return '00$num';
@@ -55,4 +62,21 @@ String formatNumber(int num) {
   } else {
     return '$num';
   }
+}
+
+GeneralInvoice generateGeneralInvoice(Invoice invoice, Client client) {
+  return GeneralInvoice(
+    id: invoice.id,
+    clientId: client.id,
+    date: invoice.date,
+    total: invoice.total,
+    clientName: client.fullName,
+    clientAddress: client.address,
+    clientEmail: client.email,
+    clientPhoneNumber: client.phoneNumber,
+    invoiceNumber: invoice.invoiceNumber,
+    rest: invoice.rest,
+    pay: invoice.pay,
+    items: invoice.items,
+  );
 }

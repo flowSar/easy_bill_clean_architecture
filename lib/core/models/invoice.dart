@@ -1,7 +1,4 @@
-import 'package:easy_bill_clean_architecture/features/data/invoices/models/invoice_item_model.dart';
-import 'package:uuid/uuid.dart';
-
-import '../../features/domain/invoices/entities/invoice_item.dart';
+import '../../features/data/invoices/models/invoice_model.dart';
 
 // this module for the whole invoice including the client info and the all items of the inoice
 class GeneralInvoice {

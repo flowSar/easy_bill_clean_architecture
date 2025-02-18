@@ -19,7 +19,7 @@ class ClientLocalDataSource {
     }
   }
 
-  Future<List<ClientModel>> getClient() async {
+  Future<List<ClientModel>> getClients() async {
     final db = await databaseHelper.database;
     try {
       if (db != null) {
@@ -35,4 +35,18 @@ class ClientLocalDataSource {
   Future<void> updateClient(ClientModel client) async {}
 
   Future<void> deleteClient(int id) async {}
+
+  Future<ClientModel> getClient(int id) async {
+    final db = await databaseHelper.database;
+    try {
+      if (db != null) {
+        final results =
+            await db.query('clients', where: 'id=?', whereArgs: [id]);
+        ClientModel.fromJson(results[0]);
+      }
+      throw ServerException('insert failed database = null');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
 }

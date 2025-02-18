@@ -45,7 +45,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
   Future<void> loadClientsData() async {
     try {
       // load client from database
-      context.read<ClientBloc>().add(GetClientEvent());
+      context.read<ClientBloc>().add(GetClientsEvent());
     } catch (e) {
       showErrorDialog(context, 'loading Clients', e.toString());
     }

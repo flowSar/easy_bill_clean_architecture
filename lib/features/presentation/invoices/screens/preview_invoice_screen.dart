@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_event.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -45,6 +47,9 @@ class PreviewInvoiceScreen extends StatelessWidget {
             onTap: () async {
               try {
                 // await context.read<DataProvider>().deleteInvoice(invoice!.id);
+                context
+                    .read<InvoiceBloc>()
+                    .add(DeleteInvoicesEvent(invoice!.id));
                 returnBack();
               } catch (e) {
                 showError(e);

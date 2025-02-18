@@ -2,7 +2,13 @@ import '../../../domain/clients/model/client.dart';
 
 abstract class ClientEvent {}
 
-class GetClientEvent extends ClientEvent {}
+class GetClientsEvent extends ClientEvent {}
+
+class GetClientEvent extends ClientEvent {
+  final int id;
+
+  GetClientEvent(this.id);
+}
 
 class AddClientEvent extends ClientEvent {
   final Client client;

@@ -2,6 +2,9 @@ import 'package:easy_bill_clean_architecture/features/domain/business_info/entit
 import 'package:easy_bill_clean_architecture/features/presentation/business_info/bloc/business_info_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/business_info/bloc/business_info_event.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/business_info/bloc/business_info_state.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_event.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +28,6 @@ import '../../../../core/widgets/selected_item_card.dart';
 import '../../../../core/widgets/user_card.dart';
 import '../../../domain/clients/model/client.dart';
 import '../../../domain/invoices/entities/invoice.dart';
-import '../../../domain/invoices/entities/invoice_item.dart';
 import '../../../domain/items/entity/item.dart';
 import '../../items/screens/new_item_screen.dart';
 
@@ -180,178 +182,188 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        body: Padding(
-          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-          child: Column(
-            spacing: 8,
-            children: [
-              // check if the clients not selected display card that show that the client is not selected
-              client != null
-                  ? UserCard(
-                      title: client!.fullName,
-                      subTitle: client!.email!,
-                      elevation: 2,
-                      onPressed: () {
-                        context
-                            .push(
-                          '/clientScreen',
-                          extra: ClientScreenParams(
-                            client: null,
-                            mode: ScreenMode.select,
-                          ),
-                        )
-                            .then((newClient) {
-                          if (newClient != null) {
-                            setState(() {
-                              client = newClient as Client;
-                            });
-                          }
-                        });
-                      },
-                    )
-                  : SelectItemButton(
-                      elevation: 2,
-                      label: 'Select Client',
-                      onPressed: () {
-                        context
-                            .push('/clientScreen',
-                                extra: ClientScreenParams(
-                                  client: null,
-                                  mode: ScreenMode.select,
-                                ))
-                            .then((newClient) {
-                          if (newClient != null) {
-                            setState(() {
-                              client = newClient as Client;
-                            });
-                          }
-                        });
-                      },
-                    ),
-              // consumer for consuming the business info from the dataProviders
-              BlocBuilder<BusinessInfoBloc, BusinessInfoState>(
-                  builder: (context, state) {
-                if (state is BusinessInfoFailed) {
-                  return SelectItemButton(
-                    elevation: 2,
-                    label: 'Business Info',
-                    onPressed: () {
-                      context.push('/businessScreen');
-                    },
-                  );
-                }
-                if (state is BusinessInfoLoading) {
-                  return CustomCircularProgress(
-                    strokeWidth: 2,
-                    h: 35,
-                    w: 35,
-                  );
-                }
-                if (state is BusinessInfoLoaded) {
-                  businessInfo = state.businessInfo;
-                  return UserCard(
-                    onPressed: () {
-                      context.push('/businessScreen');
-                    },
-                    elevation: 2,
-                    title: businessInfo!.businessName,
-                    subTitle: businessInfo!.businessEmail!,
-                  );
-                }
-                return Text('loading...');
-              }),
-              Expanded(
-                child: selectedItems.isNotEmpty
-                    ? ListView.builder(
-                        itemCount: selectedItems.length,
-                        itemBuilder: (context, index) {
-                          return SelectedItemCard(
-                            onEdite: () {},
-                            onDelete: () {
+        body: BlocListener<InvoiceBloc, InvoiceState>(
+          listener: (context, state) {
+            if (state is InvoiceFailed) {
+              showErrorDialog(context, 'insert invoice', state.error);
+            }
+            if (state is InvoiceSuccess) {
+              snackBar(context, 'invoice insert success');
+            }
+          },
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            child: Column(
+              spacing: 8,
+              children: [
+                // check if the clients not selected display card that show that the client is not selected
+                client != null
+                    ? UserCard(
+                        title: client!.fullName,
+                        subTitle: client!.email!,
+                        elevation: 2,
+                        onPressed: () {
+                          context
+                              .push(
+                            '/clientScreen',
+                            extra: ClientScreenParams(
+                              client: null,
+                              mode: ScreenMode.select,
+                            ),
+                          )
+                              .then((newClient) {
+                            if (newClient != null) {
                               setState(() {
-                                selectedItems.removeAt(index);
+                                client = newClient as Client;
                               });
-                            },
-                            bg: greyLight,
-                            name: selectedItems[index].name,
-                            barCode: selectedItems[index].barCode!,
-                            quantity: selectedItems[index].quantity!,
-                            price: selectedItems[index].price,
-                            tax: selectedItems[index].tax!,
-                          );
-                        })
-                    : Empty(
-                        title: 'No Item was added',
-                        subTitle: 'no item msg',
+                            }
+                          });
+                        },
+                      )
+                    : SelectItemButton(
+                        elevation: 2,
+                        label: 'Select Client',
+                        onPressed: () {
+                          context
+                              .push('/clientScreen',
+                                  extra: ClientScreenParams(
+                                    client: null,
+                                    mode: ScreenMode.select,
+                                  ))
+                              .then((newClient) {
+                            if (newClient != null) {
+                              setState(() {
+                                client = newClient as Client;
+                              });
+                            }
+                          });
+                        },
                       ),
-              ),
+                // consumer for consuming the business info from the dataProviders
+                BlocBuilder<BusinessInfoBloc, BusinessInfoState>(
+                    builder: (context, state) {
+                  if (state is BusinessInfoFailed) {
+                    return SelectItemButton(
+                      elevation: 2,
+                      label: 'Business Info',
+                      onPressed: () {
+                        context.push('/businessScreen');
+                      },
+                    );
+                  }
+                  if (state is BusinessInfoLoading) {
+                    return CustomCircularProgress(
+                      strokeWidth: 2,
+                      h: 35,
+                      w: 35,
+                    );
+                  }
+                  if (state is BusinessInfoLoaded) {
+                    businessInfo = state.businessInfo;
+                    return UserCard(
+                      onPressed: () {
+                        context.push('/businessScreen');
+                      },
+                      elevation: 2,
+                      title: businessInfo!.businessName,
+                      subTitle: businessInfo!.businessEmail!,
+                    );
+                  }
+                  return Text('loading...');
+                }),
+                Expanded(
+                  child: selectedItems.isNotEmpty
+                      ? ListView.builder(
+                          itemCount: selectedItems.length,
+                          itemBuilder: (context, index) {
+                            return SelectedItemCard(
+                              onEdite: () {},
+                              onDelete: () {
+                                setState(() {
+                                  selectedItems.removeAt(index);
+                                });
+                              },
+                              bg: greyLight,
+                              name: selectedItems[index].name,
+                              barCode: selectedItems[index].barCode!,
+                              quantity: selectedItems[index].quantity!,
+                              price: selectedItems[index].price,
+                              tax: selectedItems[index].tax!,
+                            );
+                          })
+                      : Empty(
+                          title: 'No Item was added',
+                          subTitle: 'no item msg',
+                        ),
+                ),
 
-              InkWell(
-                onTap: () {
-                  // navigate the items screen and select item
-                  context
-                      .push(
-                    '/itemsScreen',
-                    extra: ItemScreenParams(
-                      item: null,
-                      mode: ScreenMode.select,
-                    ),
-                  )
-                      .then((selectedItem) async {
-                    if (selectedItem != null) {
-                      Item item = selectedItem as Item;
-                      // initialize the barcode
-                      barCode = item.barCode!;
-                      Item? newItem = await displayBottomModal(item);
+                InkWell(
+                  onTap: () {
+                    // navigate the items screen and select item
+                    context
+                        .push(
+                      '/itemsScreen',
+                      extra: ItemScreenParams(
+                        item: null,
+                        mode: ScreenMode.select,
+                      ),
+                    )
+                        .then((selectedItem) async {
+                      if (selectedItem != null) {
+                        Item item = selectedItem as Item;
+                        // initialize the barcode
+                        barCode = item.barCode!;
+                        Item? newItem = await displayBottomModal(item);
 
-                      if (newItem != null) {
-                        setState(() {
-                          selectedItems.add(newItem);
-                        });
+                        if (newItem != null) {
+                          setState(() {
+                            selectedItems.add(newItem);
+                          });
+                        }
                       }
-                    }
-                  });
-                },
-                child: DottedBorder(
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    color: greyLight,
-                    padding: EdgeInsets.symmetric(
-                      vertical: 6,
-                    ),
-                    child: Row(
-                      spacing: 4,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Add item',
-                          style: kTextStyle2b.copyWith(color: Colors.black),
-                          textAlign: TextAlign.center,
-                        ),
-                        Icon(
-                          Icons.add,
-                        ),
-                      ],
+                    });
+                  },
+                  child: DottedBorder(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      color: greyLight,
+                      padding: EdgeInsets.symmetric(
+                        vertical: 6,
+                      ),
+                      child: Row(
+                        spacing: 4,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Add item',
+                            style: kTextStyle2b.copyWith(color: Colors.black),
+                            textAlign: TextAlign.center,
+                          ),
+                          Icon(
+                            Icons.add,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  color: greyLight,
-                  borderRadius: BorderRadius.circular(8),
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                    color: greyLight,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    vertical: 6,
+                  ),
+                  child: Text(
+                    'Total: $billTotal $currency',
+                    style: kTextStyle2b.copyWith(color: Colors.black),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-                padding: EdgeInsets.symmetric(
-                  vertical: 6,
-                ),
-                child: Text(
-                  'Total: $billTotal $currency',
-                  style: kTextStyle2b.copyWith(color: Colors.black),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         bottomNavigationBar: BottomAppBar(
@@ -372,9 +384,10 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
                         displaySaveInvoiceOption(context, (answer) async {
                           // if the answer is true we save the invoice
                           if (answer) {
-                            // await context
-                            //     .read<DataProvider>()
-                            //     .insertInvoice(invoice);
+                            // insert data to database
+                            context
+                                .read<InvoiceBloc>()
+                                .add(AddInvoicesEvent(invoice, invoiceItems));
 
                             // display snack abr
                             displaySnackBar(

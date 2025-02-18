@@ -25,7 +25,7 @@ class ClientRepositoryImpl implements ClientRepository {
   @override
   Future<Either<Failure, List<Client>>> getClients() async {
     try {
-      final result = await clientLocalDataSource.getClient();
+      final result = await clientLocalDataSource.getClients();
       return Right(result);
     } catch (e) {
       return Left(Failure(e.toString()));
@@ -42,5 +42,15 @@ class ClientRepositoryImpl implements ClientRepository {
   Future<Either<Failure, int>> updateClient(Client client) {
     // TODO: implement updateClient
     throw UnimplementedError();
+  }
+
+  @override
+  Future<Either<Failure, Client>> getClient(int id) async {
+    try {
+      final client = await clientLocalDataSource.getClient(id);
+      return Right(client);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 }

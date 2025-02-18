@@ -1,6 +1,19 @@
+import 'package:easy_bill_clean_architecture/core/models/invoice.dart';
+import 'package:easy_bill_clean_architecture/core/utilities/functions.dart';
+import 'package:easy_bill_clean_architecture/features/domain/clients/model/client.dart';
+import 'package:easy_bill_clean_architecture/features/domain/invoices/entities/invoice.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/clients/bloc/client_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/clients/bloc/client_event.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_event.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import '../../../../core/widgets/bill_card.dart';
+import '../../../../core/widgets/custom_circular_progress.dart';
+import '../../../../core/widgets/empty.dart';
+import '../../clients/bloc/client_state.dart';
 
 class InvoiceScreen extends StatefulWidget {
   const InvoiceScreen({super.key});
@@ -13,6 +26,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   bool loading = false;
   late bool isSearching = false;
   late TextEditingController searchKeyword;
+  late List<GeneralInvoice> generalInvoices = [];
+  late List<Client> clients = [];
 
   @override
   void initState() {
@@ -31,18 +46,18 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   Future loadInvoices() async {
     try {
       // set loading state to true when this function called
-      setState(() {
-        loading = true;
-      });
+
       // start loading data from database
       // await context.read<DataProvider>().loadInvoices();
       // set loading to false data after data loading finished
-      loading = false;
+      // load invoices
+      context.read<ClientBloc>().add(GetClientsEvent());
+      context.read<InvoiceBloc>().add(GetInvoicesEvent());
+
+      // load invoices
     } catch (e) {
+      print('error|: ${e.toString()}');
       // set loading to false if loading failed and display the error
-      setState(() {
-        loading = false;
-      });
     }
   }
 
@@ -111,53 +126,71 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       ),
       body: Column(
         children: [
-          Expanded(child: Text('empty')
-              //     Consumer<DataProvider>(builder: (context, dataProvider, child) {
-              //   List<GeneralInvoice> bills = dataProvider.invoices;
-              //   // if loading = true , display loading widget
-              //   if (loading) {
-              //     return Center(
-              //       child: CustomCircularProgress(
-              //         w: 120,
-              //         h: 120,
-              //         strokeWidth: 4,
-              //       ),
-              //     );
-              //   } else {
-              //     // if the bills 1= []display bills
-              //     if (bills.isNotEmpty) {
-              //       return ListView.builder(
-              //         itemCount: bills.length,
-              //         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              //         itemBuilder: (context, index) {
-              //           return GestureDetector(
-              //             onTap: () {
-              //               context.push('/previewBillScreen',
-              //                   extra: bills[index]);
-              //             },
-              //             child: BillCard(
-              //               client: bills[index].clientName,
-              //               date: bills[index].billDate,
-              //               total: bills[index].total.toString(),
-              //               billNumber: formatNumber(index + 1),
-              //             ),
-              //           );
-              //         },
-              //       );
-              //     } else {
-              //       // we display two kind of design if the use is searching fo an invoice and didn't found it
-              //       // and when there's no invoice if the database
-              //       return Center(
-              //         child: isSearching
-              //             ? Text('No invoice Was found try another key word')
-              //             : Empty(
-              //                 title: language.translate('No invoice Was found'),
-              //                 subTitle: ''),
-              //       );
-              //     }
-              //   }
-              // }),
-              ),
+          BlocConsumer<InvoiceBloc, InvoiceState>(
+            listener: (context, state) {},
+            builder: (context, state) {
+              List<Invoice> invoices = [];
+              // each time the page get rebuild initialize the invoice to it get accumulated
+              generalInvoices = [];
+
+              if (state is InvoiceFailed) {
+                return Center(child: Text(state.error));
+              }
+
+              if (state is InvoiceLoading) {
+                return CustomCircularProgress(
+                  w: 120,
+                  h: 120,
+                  strokeWidth: 4,
+                );
+              }
+              // get all client
+              final clientBlocState = context.read<ClientBloc>().state;
+              if (clientBlocState is LoadClientsSuccess) {
+                clients = clientBlocState.clients;
+              }
+              if (state is InvoicesLoaded) {
+                invoices = state.invoices;
+                for (final invoice in invoices) {
+                  if (clients.isNotEmpty) {
+                    generalInvoices.add(generateGeneralInvoice(
+                        invoice, getClientById(clients, invoice.clientId)));
+                  }
+                }
+              }
+              return generalInvoices.isNotEmpty
+                  ? Expanded(
+                      child: ListView.builder(
+                        itemCount: generalInvoices.length,
+                        padding:
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () {
+                              context.push('/previewBillScreen',
+                                  extra: generalInvoices[index]);
+                            },
+                            child: BillCard(
+                              client: generalInvoices[index].clientName,
+                              date: generalInvoices[index].billDate,
+                              total: generalInvoices[index].total.toString(),
+                              billNumber: formatNumber(index + 1),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : Expanded(
+                      child: Center(
+                        child: isSearching
+                            ? Text('No invoice Was found try another key word')
+                            : Empty(
+                                title: 'No invoice Was found', subTitle: ''),
+                      ),
+                    );
+            },
+          )
+          // if the bills 1= []display bills
         ],
       ),
     ));

@@ -12,6 +12,12 @@ class LoadClientsSuccess extends ClientState {
   LoadClientsSuccess(this.clients);
 }
 
+class LoadClientSuccess extends ClientState {
+  final Client client;
+
+  LoadClientSuccess(this.client);
+}
+
 class AddClientsSuccess extends ClientState {}
 
 class ClientFailed extends ClientState {

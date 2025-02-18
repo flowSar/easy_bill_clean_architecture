@@ -7,6 +7,8 @@ abstract interface class ClientRepository {
 
   Future<Either<Failure, List<Client>>> getClients();
 
+  Future<Either<Failure, Client>> getClient(int id);
+
   Future<Either<Failure, int>> deleteClient(int id);
 
   Future<Either<Failure, int>> updateClient(Client client);
