@@ -22,3 +22,9 @@ class GetInvoiceItemEvent extends InvoiceEvent {
 
   GetInvoiceItemEvent({required this.id});
 }
+
+class FilterInvoicesEvent extends InvoiceEvent {
+  final List<int?> ids;
+
+  FilterInvoicesEvent({required this.ids});
+}

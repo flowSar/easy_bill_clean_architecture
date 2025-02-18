@@ -54,6 +54,15 @@ Client getClientById(List<Client> clients, int id) {
   return foundClient[0];
 }
 
+List<int?> getClientsId(List<Client> clients, String keyWord) {
+  return clients.map((client) {
+    if (client.fullName.contains(keyWord)) {
+      return client.id;
+    }
+    return 0;
+  }).toList();
+}
+
 String formatNumber(int num) {
   if (num < 10) {
     return '00$num';

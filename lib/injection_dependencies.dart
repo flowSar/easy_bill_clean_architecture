@@ -111,6 +111,8 @@ void initializeDependencies() {
   );
 
   sl.registerFactory<InvoiceBloc>(
-    () => InvoiceBloc(invoiceUseCase: sl<InvoiceUseCase>()),
+    () => InvoiceBloc(
+        invoiceUseCase: sl<InvoiceUseCase>(),
+        clientUseCase: sl<ClientUseCase>()),
   );
 }

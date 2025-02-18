@@ -94,8 +94,10 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                           hintText: 'Search (client name)',
                           border: InputBorder.none,
                         ),
-                        onChanged: (key) {
-                          // context.read<DataProvider>().filterInvoices(key);
+                        onChanged: (keyWord) {
+                          // call filter function with the isd of the clients that their name continue the keyword
+                          context.read<InvoiceBloc>().add(FilterInvoicesEvent(
+                              ids: getClientsId(clients, keyWord)));
                         },
                       ),
                     ),
