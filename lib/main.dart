@@ -2,6 +2,8 @@ import 'package:easy_bill_clean_architecture/features/presentation/business_info
 import 'package:easy_bill_clean_architecture/features/presentation/clients/bloc/client_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/items/bloc/item_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:easy_bill_clean_architecture/injection_dependencies.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,6 +30,9 @@ void main() async {
         BlocProvider(
           create: (context) => sl<InvoiceBloc>(),
         ),
+        BlocProvider(
+          create: (context) => sl<SettingsBloc>(),
+        ),
       ],
       child: MyApp(),
     ),
@@ -43,15 +48,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      // remove debug badge
-      debugShowCheckedModeBanner: false,
-      // load the theme / dark or light from the app settings
-      // theme: context.watch<SettingsProvider>().isDarMode
-      //     ? ThemeData.dark()
-      //     : ThemeData.light(),
-      routerConfig: appRouter,
-      // locale: context.read<SettingsProvider>().currentLocal,
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, state) {
+        // late bool isDarkMode = false;
+        // if (state is SettingsThemeModeUpdated) {
+        //   isDarkMode = state.isDarkMode!;
+        // }
+        return MaterialApp.router(
+          // remove debug badge
+          debugShowCheckedModeBanner: false,
+          // load the theme / dark or light from the app settings
+          theme: state.isDarkMode! ? ThemeData.dark() : ThemeData.light(),
+          routerConfig: appRouter,
+          // locale: context.read<SettingsProvider>().currentLocal,
+        );
+      },
     );
   }
 }

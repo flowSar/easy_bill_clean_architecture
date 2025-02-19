@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constance/colors.dart';
 import '../../../../core/constance/g_constants.dart';
 import '../../../../core/utilities/functions.dart';
-import '../../../../core/widgets/custom_circular_progress.dart';
 import '../../../../core/widgets/custom_text_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/error_dialog.dart';

@@ -18,6 +18,12 @@ enum ScreenMode {
   delete,
 }
 
+enum SettingsKeys {
+  currency,
+  themeMode,
+  signature,
+}
+
 class ItemScreenParams {
   final Item? _item;
   final ScreenMode _mode;

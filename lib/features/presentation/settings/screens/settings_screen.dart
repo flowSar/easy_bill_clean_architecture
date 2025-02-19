@@ -1,9 +1,13 @@
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_event.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/widgets/currency_dialog.dart';
-import '../../core/widgets/language_dialog.dart';
-import '../../core/widgets/select_card.dart';
+import '../../../../core/widgets/currency_dialog.dart';
+import '../../../../core/widgets/language_dialog.dart';
+import '../../../../core/widgets/select_card.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -23,7 +27,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // load currency / or selected currency
     // context.read<SettingsProvider>().loadCurrency();
     // assign loaded currency to selectedCurrency
-    // selectedCurrency = context.read<SettingsProvider>().currency;
+    context.read<SettingsBloc>().add(GetCurrencyEvent());
+    context.read<SettingsBloc>().add(GetThemeModeEvent());
     super.initState();
   }
 
@@ -80,39 +85,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       TextStyle(color: Colors.greenAccent[700], fontSize: 20),
                 ),
               ),
-              SelectCard(
-                onTap: () {},
-                leftIcon: Icons.nightlight,
-                middleText: 'Night Mode',
-                p: 9,
-                rightIcon: Switch(
-                  value: _isSwitched,
-                  onChanged: (value) {
-                    setState(() {
-                      _isSwitched = value;
-                      // context.read<SettingsProvider>().setDarkMode(value);
-                    });
-                  },
-                  padding: EdgeInsets.zero,
-                ),
-              ),
-              SelectCard(
-                p: 14,
-                onTap: () {
-                  showDialog(
-                          context: context,
-                          builder: (BuildContext context) => CurrencyDialog())
-                      .then((currency) {
-                    if (currency != null) {
-                      setState(() {
-                        selectedCurrency = currency.toString();
-                      });
-                    }
-                  });
+              BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (context, state) {
+                  _isSwitched = state.isDarkMode!;
+
+                  return SelectCard(
+                    onTap: () {},
+                    leftIcon: Icons.nightlight,
+                    middleText: 'Night Mode',
+                    p: 9,
+                    rightIcon: Switch(
+                      value: _isSwitched,
+                      onChanged: (value) {
+                        setState(() {
+                          _isSwitched = value;
+                          context
+                              .read<SettingsBloc>()
+                              .add(SetThemeModeEvent(value));
+
+                          // context.read<SettingsProvider>().setDarkMode(value);
+                        });
+                      },
+                      padding: EdgeInsets.zero,
+                    ),
+                  );
                 },
-                leftIcon: Icons.currency_exchange,
-                middleText: '${'Currency'} ($selectedCurrency)',
-                rightIcon: Icon(Icons.keyboard_arrow_right),
+              ),
+              BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (context, state) {
+                  selectedCurrency = state.currency!;
+                  return SelectCard(
+                    p: 14,
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) =>
+                              CurrencyDialog()).then((currency) {
+                        if (currency != null) {
+                          setState(() {
+                            selectedCurrency = currency.toString();
+                          });
+                        }
+                      });
+                    },
+                    leftIcon: Icons.currency_exchange,
+                    middleText: '${'Currency'} ($selectedCurrency)',
+                    rightIcon: Icon(Icons.keyboard_arrow_right),
+                  );
+                },
               ),
               SelectCard(
                 p: 14,

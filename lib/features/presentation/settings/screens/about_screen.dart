@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:async_preferences/async_preferences.dart';
 
-import '../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/custom_text_field.dart';
 
 final preferences = AsyncPreferences();
 

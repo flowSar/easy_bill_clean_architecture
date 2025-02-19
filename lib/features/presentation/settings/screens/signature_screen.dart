@@ -8,8 +8,8 @@ import 'dart:math';
 
 import 'package:uuid/uuid.dart';
 
-import '../../core/widgets/custom_text_button.dart';
-import '../../core/widgets/error_dialog.dart';
+import '../../../../core/widgets/custom_text_button.dart';
+import '../../../../core/widgets/error_dialog.dart';
 
 final random = Random();
 

@@ -7,6 +7,8 @@ import 'package:easy_bill_clean_architecture/features/data/invoices/data_source/
 import 'package:easy_bill_clean_architecture/features/data/invoices/repository/invoice_repository_impl.dart';
 import 'package:easy_bill_clean_architecture/features/data/items/data_source/item_local_data_source.dart';
 import 'package:easy_bill_clean_architecture/features/data/items/repository/item_repository_impl.dart';
+import 'package:easy_bill_clean_architecture/features/data/settings/data_source/settings_local_data_source.dart';
+import 'package:easy_bill_clean_architecture/features/data/settings/repository/setting_repository_impl.dart';
 import 'package:easy_bill_clean_architecture/features/domain/business_info/repository/business_info_repository.dart';
 import 'package:easy_bill_clean_architecture/features/domain/business_info/user_cases/business_info_use_case_impl.dart';
 import 'package:easy_bill_clean_architecture/features/domain/clients/repository/client_repository.dart';
@@ -15,11 +17,15 @@ import 'package:easy_bill_clean_architecture/features/domain/invoices/repository
 import 'package:easy_bill_clean_architecture/features/domain/invoices/use_cases/invoice_use_case.dart';
 import 'package:easy_bill_clean_architecture/features/domain/items/item_use_cases/item_use_case_impl.dart';
 import 'package:easy_bill_clean_architecture/features/domain/items/repository/item_repository.dart';
+import 'package:easy_bill_clean_architecture/features/domain/settings/repository/settings_repository.dart';
+import 'package:easy_bill_clean_architecture/features/domain/settings/use_cases/signature_use_case.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/business_info/bloc/business_info_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/clients/bloc/client_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/items/bloc/item_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final sl = GetIt.instance;
 
@@ -114,5 +120,28 @@ void initializeDependencies() {
     () => InvoiceBloc(
         invoiceUseCase: sl<InvoiceUseCase>(),
         clientUseCase: sl<ClientUseCase>()),
+  );
+
+  // register settings dependencies.
+
+  sl.registerSingleton<SettingsLocalDataSource>(
+      SettingsLocalDataSourceImpl(SharedPreferencesAsync()));
+
+  sl.registerSingleton<SettingsRepository>(
+    SettingsRepositoryImpl(
+      sl<SettingsLocalDataSource>(),
+    ),
+  );
+
+  sl.registerSingleton<SettingsUseCase>(
+    SettingsUseCaseImpl(
+      sl<SettingsRepository>(),
+    ),
+  );
+
+  sl.registerFactory<SettingsBloc>(
+    () => SettingsBloc(
+      sl<SettingsUseCase>(),
+    ),
   );
 }

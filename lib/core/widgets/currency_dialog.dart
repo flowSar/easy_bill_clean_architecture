@@ -1,6 +1,10 @@
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
+import '../../features/presentation/settings/bloc/settings_event.dart';
 import '../models/currency.dart';
 
 class CurrencyDialog extends StatefulWidget {
@@ -11,7 +15,14 @@ class CurrencyDialog extends StatefulWidget {
 }
 
 class _CurrencyDialogState extends State<CurrencyDialog> {
-  String selectedCurrency = 'US\$';
+  late String selectedCurrency = 'dh';
+
+  @override
+  void initState() {
+    context.read<SettingsBloc>().add(GetCurrencyEvent());
+    context.read<SettingsBloc>().add(GetThemeModeEvent());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,27 +48,32 @@ class _CurrencyDialogState extends State<CurrencyDialog> {
               child: ListView.builder(
                   itemCount: Currency.currencies.length,
                   itemBuilder: (context, index) {
-                    return RadioMenuButton(
-                      value: Currency.currencies[index].symbol,
-                      groupValue: selectedCurrency,
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCurrency = value.toString();
-                          // context
-                          //     .read<SettingsProvider>()
-                          //     .setCurrency(selectedCurrency);
-                        });
+                    return BlocBuilder<SettingsBloc, SettingsState>(
+                      builder: (context, state) {
+                        selectedCurrency = state.currency!;
+                        return RadioMenuButton(
+                          value: Currency.currencies[index].symbol,
+                          groupValue: selectedCurrency,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedCurrency = value.toString();
+                              context
+                                  .read<SettingsBloc>()
+                                  .add(SetCurrencyEvent(value.toString()));
+                            });
+                          },
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.55,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(Currency.currencies[index].country),
+                                Text(Currency.currencies[index].symbol)
+                              ],
+                            ),
+                          ),
+                        );
                       },
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.55,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(Currency.currencies[index].country),
-                            Text(Currency.currencies[index].symbol)
-                          ],
-                        ),
-                      ),
                     );
                   }),
             ),

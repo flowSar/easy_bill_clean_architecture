@@ -1,6 +1,6 @@
 import 'package:easy_bill_clean_architecture/features/presentation/clients/screens/clients_screen.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/invoices/screens/invoice_screen.dart';
-import 'package:easy_bill_clean_architecture/screens/settings/settings_screen.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/constance/g_constants.dart';

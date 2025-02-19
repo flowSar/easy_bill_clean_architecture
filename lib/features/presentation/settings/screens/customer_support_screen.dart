@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/constance/g_constants.dart';
-import '../../core/widgets/custom_text_button.dart';
-import '../../core/widgets/custom_text_field.dart';
-import '../../core/widgets/error_dialog.dart';
+import '../../../../core/constance/g_constants.dart';
+import '../../../../core/widgets/custom_text_button.dart';
+import '../../../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/error_dialog.dart';
 
 final _formKey = GlobalKey<FormState>();
 

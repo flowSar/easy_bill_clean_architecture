@@ -1,7 +1,8 @@
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-
-
 
 class CustomTextField extends StatefulWidget {
   final String? placeholder;
@@ -63,53 +64,60 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-          horizontal: widget.m!.$1, vertical: widget.m!.$2),
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.white : widget.bg,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: TextStyle(
-                color: _isFocused ? Colors.blue : Colors.grey,
-                fontSize: _isFocused ? 14 : 0, // Shrink label when unfocused
-              ),
-              child: _isFocused
-                  ? Text('${widget.title}: ') // Label when focused
-                  : SizedBox.shrink(),
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, state) {
+        bool isDarkMode = false;
+        isDarkMode = state.isDarkMode!;
+        return Padding(
+          padding: EdgeInsets.symmetric(
+              horizontal: widget.m!.$1, vertical: widget.m!.$2),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.white : widget.bg,
+              borderRadius: BorderRadius.circular(8),
             ),
-            TextFormField(
-              readOnly: widget.readOnly,
-              initialValue: widget.initialValue,
-              keyboardType: widget.keyType ?? TextInputType.text,
-              controller: widget.controller,
-              onChanged: widget.onChanged,
-              focusNode: _focusNode,
-              style: isDarkMode ? TextStyle(color: Colors.red) : null,
-              onTap: () {},
-              decoration: InputDecoration(
-                hintText: widget.placeholder,
-                icon: widget.icon,
-                suffix: GestureDetector(
-                  onTap: widget.onErase,
-                  child: Icon(
-                    Icons.close,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style: TextStyle(
+                    color: _isFocused ? Colors.blue : Colors.grey,
+                    fontSize:
+                        _isFocused ? 14 : 0, // Shrink label when unfocused
                   ),
+                  child: _isFocused
+                      ? Text('${widget.title}: ') // Label when focused
+                      : SizedBox.shrink(),
                 ),
-                border: InputBorder.none,
-              ),
-              validator: widget.validator,
-            )
-          ],
-        ),
-      ),
+                TextFormField(
+                  readOnly: widget.readOnly,
+                  initialValue: widget.initialValue,
+                  keyboardType: widget.keyType ?? TextInputType.text,
+                  controller: widget.controller,
+                  onChanged: widget.onChanged,
+                  focusNode: _focusNode,
+                  style: isDarkMode ? TextStyle(color: Colors.red) : null,
+                  onTap: () {},
+                  decoration: InputDecoration(
+                    hintText: widget.placeholder,
+                    icon: widget.icon,
+                    suffix: GestureDetector(
+                      onTap: widget.onErase,
+                      child: Icon(
+                        Icons.close,
+                      ),
+                    ),
+                    border: InputBorder.none,
+                  ),
+                  validator: widget.validator,
+                )
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

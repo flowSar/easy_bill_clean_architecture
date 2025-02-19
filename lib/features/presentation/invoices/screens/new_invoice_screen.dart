@@ -5,6 +5,9 @@ import 'package:easy_bill_clean_architecture/features/presentation/business_info
 import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_event.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_state.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_event.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -50,7 +53,6 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
   Client? client;
   List<InvoiceItem> invoiceItems = [];
   late Invoice invoice;
-  late String currency;
   DateTime now = DateTime.now();
   late String date;
   late final String invoiceId;
@@ -61,8 +63,8 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
   void initState() {
     invoiceId = uuid.v4();
     loadBusinessInfo();
-    // currency = context.read<SettingsProvider>().currency;
-    currency = 'dh';
+    context.read<SettingsBloc>().add(GetCurrencyEvent());
+    // context.read<SettingsBloc>().add(GetThemeModeEvent());
     date = DateFormat('dd/MM/yyyy').format(now);
     super.initState();
   }
@@ -70,6 +72,7 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
   Future loadBusinessInfo() async {
     try {
       context.read<BusinessInfoBloc>().add(GetBusinessInfoEvent());
+      // context.read<SettingsBloc>().add(GetCurrencyEvent());
     } catch (e) {
       showErrorDialog(context, 'businessInfo', 'business info loading failed');
     }
@@ -356,10 +359,16 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
                   padding: EdgeInsets.symmetric(
                     vertical: 6,
                   ),
-                  child: Text(
-                    'Total: $billTotal $currency',
-                    style: kTextStyle2b.copyWith(color: Colors.black),
-                    textAlign: TextAlign.center,
+                  child: BlocBuilder<SettingsBloc, SettingsState>(
+                    builder: (context, state) {
+                      late String currency = '\$';
+                      currency = state.currency!;
+                      return Text(
+                        'Total: $billTotal $currency',
+                        style: kTextStyle2b.copyWith(color: Colors.black),
+                        textAlign: TextAlign.center,
+                      );
+                    },
                   ),
                 ),
               ],

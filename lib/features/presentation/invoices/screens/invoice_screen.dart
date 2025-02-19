@@ -14,6 +14,8 @@ import '../../../../core/widgets/bill_card.dart';
 import '../../../../core/widgets/custom_circular_progress.dart';
 import '../../../../core/widgets/empty.dart';
 import '../../clients/bloc/client_state.dart';
+import '../../settings/bloc/settings_bloc.dart';
+import '../../settings/bloc/settings_event.dart';
 
 class InvoiceScreen extends StatefulWidget {
   const InvoiceScreen({super.key});

@@ -1,11 +1,11 @@
-
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../constance/colors.dart';
 import 'custom_popup_menu_button.dart';
-
-
 
 class SelectedItemCard extends StatelessWidget {
   final VoidCallback onDelete;
@@ -31,14 +31,13 @@ class SelectedItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String currency = 'dh';
     // String currency = context.read<SettingsProvider>().currency;
     final double dTax = tax;
     final subTotal = price * quantity;
     final double total = subTotal + (subTotal * dTax) / 100;
     return Container(
       margin: EdgeInsets.symmetric(vertical: 2),
-      height: 72,
+      height: 76,
       decoration: BoxDecoration(
           color: bg ?? kCustomCardBg,
           borderRadius: BorderRadius.circular(8),
@@ -46,7 +45,7 @@ class SelectedItemCard extends StatelessWidget {
             color: kBorderColor,
           )),
       child: Padding(
-        padding: EdgeInsets.only(top: 6, bottom: 6, left: 10, right: 4),
+        padding: EdgeInsets.only(top: 6, bottom: 8, left: 10, right: 4),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -92,10 +91,16 @@ class SelectedItemCard extends StatelessWidget {
                         barCode,
                         style: TextStyle(fontSize: 12),
                       ),
-                      Text(
-                        '$total $currency',
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w500),
+                      BlocBuilder<SettingsBloc, SettingsState>(
+                        builder: (context, state) {
+                          late String currency = 'dh';
+                          currency = state.currency!;
+                          return Text(
+                            '$total $currency',
+                            style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w500),
+                          );
+                        },
                       ),
                     ],
                   )
