@@ -1,3 +1,4 @@
+import 'package:easy_bill_clean_architecture/core/utilities/functions.dart';
 import 'package:easy_bill_clean_architecture/core/widgets/error_dialog.dart';
 import 'package:easy_bill_clean_architecture/features/data/clients/models/client_model.dart';
 import 'package:easy_bill_clean_architecture/features/domain/clients/model/client.dart';
@@ -71,31 +72,45 @@ class _ClientsScreenState extends State<ClientsScreen> {
               placeholder: 'Search client name',
               title: 'Client Name',
               icon: Icon(Icons.search),
-              onChanged: (value) {
-                setState(() {
-                  // dataProvider.flitterLists(value, 'clients');
-                });
+              onChanged: (keyWord) {
+                context.read<ClientBloc>().add(FilterClientEvent(keyWord));
               },
               onErase: () {
-                // dataProvider.flitterLists('', 'clients');
-                // setState(() {
-                //   _searchKeyWord.text = '';
-                // });
+                context.read<ClientBloc>().add(FilterClientEvent(''));
+                setState(() {
+                  _searchKeyWord.text = '';
+                });
               },
             ),
-            BlocBuilder<ClientBloc, ClientState>(
-              builder: (context, state) {
-                if (state is ClientFailed) {
-                  return Center(
-                    child: Text(state.error),
-                  );
+            BlocConsumer<ClientBloc, ClientState>(
+              listener: (context, state) {
+                if (state is ClientAdded) {
+                  context.read<ClientBloc>().add(GetClientsEvent());
                 }
+                if (state is ClientDeleted) {
+                  context.read<ClientBloc>().add(GetClientsEvent());
+                }
+                if (state is ClientUpdated) {
+                  context.read<ClientBloc>().add(GetClientsEvent());
+                }
+              },
+              builder: (context, state) {
                 if (state is ClientLoading) {
                   return CustomCircularProgress(
                     h: 100,
                     w: 100,
                     strokeWidth: 6,
                   );
+                }
+
+                if (state is ClientFailed) {
+                  return Center(
+                    child: Text(state.error),
+                  );
+                }
+                if (state is ClientDeleteFailed) {
+                  showErrorDialog(context, 'Delete Client',
+                      'delete client failed: ${state.error}');
                 }
                 if (state is LoadClientsSuccess) {
                   clients = state.clients;
@@ -121,9 +136,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
                                     );
                                   },
                                   onDelete: () {
-                                    // context
-                                    //     .read<DataProvider>()
-                                    //     .deleteClient(clients[index].id!);
+                                    context.read<ClientBloc>().add(
+                                        DeleteClientEvent(clients[index].id!));
                                   },
                                   onTap: () {
                                     print('select.......');

@@ -98,6 +98,7 @@ class _NewItemScreenState extends State<NewItemScreen> {
     Item generateNewItem() {
       // create instance from Item
       Item item = Item(
+        id: _id,
         barCode: barCode,
         name: _itemName.text,
         description: _description.text,
@@ -219,17 +220,6 @@ class _NewItemScreenState extends State<NewItemScreen> {
                       });
                     },
                   ),
-                  // CustomTextField(
-                  //   readOnly: loading,
-                  //   controller: _unit,
-                  //   keyType: kKeyTextType,
-                  //   placeholder: 'unit',
-                  //   title: 'unit: (piece, km...)',
-                  //   bg: kTextInputBg1,
-                  //   validator: (tax) =>
-                  //       tax!.isEmpty ? 'please Insert valid input' : null,
-                  //   onErase: () => _unit.clear(),
-                  // ),
                   CustomTextField(
                     readOnly: loading,
                     controller: _tax,

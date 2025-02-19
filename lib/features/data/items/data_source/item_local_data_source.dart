@@ -47,14 +47,29 @@ class ItemLocalDataSourceImpl implements ItemLocalDataSource {
   }
 
   @override
-  Future<int> deleteItem(int id) {
-    // TODO: implement deleteItem
-    throw UnimplementedError();
+  Future<int> deleteItem(int id) async {
+    final db = await databaseHelper.database;
+    try {
+      if (db != null) {
+        return await db.delete('items', where: 'id=?', whereArgs: [id]);
+      }
+      throw ServerException('insert failed database = null');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 
   @override
-  Future<int> updateItem(Item item) {
-    // TODO: implement updateItem
-    throw UnimplementedError();
+  Future<int> updateItem(Item item) async {
+    final db = await databaseHelper.database;
+    try {
+      if (db != null) {
+        return await db.update('items', ItemModel.fromEntity(item).toMap(),
+            where: 'id=?', whereArgs: [item.id]);
+      }
+      throw ServerException('insert failed database = null');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 }

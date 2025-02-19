@@ -1,5 +1,6 @@
 import 'package:easy_bill_clean_architecture/core/database/database_helper.dart';
 import 'package:easy_bill_clean_architecture/core/error/exception.dart';
+import 'package:easy_bill_clean_architecture/features/domain/clients/model/client.dart';
 
 import '../models/client_model.dart';
 
@@ -32,9 +33,31 @@ class ClientLocalDataSource {
     }
   }
 
-  Future<void> updateClient(ClientModel client) async {}
+  Future<int> updateClient(Client client) async {
+    final db = await databaseHelper.database;
+    try {
+      if (db != null) {
+        return await db.update(
+            'clients', ClientModel.fromEntity(client).toMap(),
+            where: 'id=?', whereArgs: [client.id]);
+      }
+      throw ServerException('insert failed database = null');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
 
-  Future<void> deleteClient(int id) async {}
+  Future<int> deleteClient(int id) async {
+    final db = await databaseHelper.database;
+    try {
+      if (db != null) {
+        return await db.delete('clients', where: 'id=?', whereArgs: [id]);
+      }
+      throw ServerException('insert failed database = null');
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
 
   Future<ClientModel> getClient(int id) async {
     final db = await databaseHelper.database;

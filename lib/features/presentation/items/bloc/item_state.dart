@@ -14,6 +14,24 @@ class ItemLoadedState extends ItemState {
 
 class ItemSuccessState extends ItemState {}
 
+class ItemAdded extends ItemState {}
+
+class ItemDeleted extends ItemState {}
+
+class ItemDeletedFailed extends ItemState {
+  final String error;
+
+  ItemDeletedFailed(this.error);
+}
+
+class ItemUpdated extends ItemState {}
+
+class ItemUpdatedFailed extends ItemState {
+  final String error;
+
+  ItemUpdatedFailed(this.error);
+}
+
 class ItemFailedState extends ItemState {
   final String error;
 

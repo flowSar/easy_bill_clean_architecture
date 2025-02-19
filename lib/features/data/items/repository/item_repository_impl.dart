@@ -30,14 +30,22 @@ class ItemRepositoryImpl implements ItemRepository {
   }
 
   @override
-  Future<Either<Failure, int>> deleteItem(int id) {
-    // TODO: implement deleteItem
-    throw UnimplementedError();
+  Future<Either<Failure, int>> deleteItem(int id) async {
+    try {
+      final result = await itemLocalDataSource.deleteItem(id);
+      return Right(result);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 
   @override
-  Future<Either<Failure, int>> updateItem(Item item) {
-    // TODO: implement updateItem
-    throw UnimplementedError();
+  Future<Either<Failure, int>> updateItem(Item item) async {
+    try {
+      final result = await itemLocalDataSource.updateItem(item);
+      return Right(result);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 }

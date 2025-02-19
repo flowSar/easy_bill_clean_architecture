@@ -27,3 +27,9 @@ class UpdateClientEvent extends ClientEvent {
 
   UpdateClientEvent(this.client);
 }
+
+class FilterClientEvent extends ClientEvent {
+  final String fullName;
+
+  FilterClientEvent(this.fullName);
+}

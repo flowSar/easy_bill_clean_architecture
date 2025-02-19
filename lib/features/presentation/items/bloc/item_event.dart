@@ -22,3 +22,9 @@ class UpdateItemEvent implements ItemEvent {
 
   UpdateItemEvent({required this.item, required this.id});
 }
+
+class FilterItemsEvent implements ItemEvent {
+  final String name;
+
+  FilterItemsEvent({required this.name});
+}

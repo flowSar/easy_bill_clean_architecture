@@ -6,6 +6,8 @@ class ClientInitial extends ClientState {}
 
 class ClientLoading extends ClientState {}
 
+class ClientAdded extends ClientState {}
+
 class LoadClientsSuccess extends ClientState {
   final List<Client> clients;
 
@@ -19,6 +21,22 @@ class LoadClientSuccess extends ClientState {
 }
 
 class AddClientsSuccess extends ClientState {}
+
+class ClientDeleted extends ClientState {}
+
+class ClientDeleteFailed extends ClientState {
+  final String error;
+
+  ClientDeleteFailed(this.error);
+}
+
+class ClientUpdated extends ClientState {}
+
+class ClientUpdateFailed extends ClientState {
+  final String error;
+
+  ClientUpdateFailed(this.error);
+}
 
 class ClientFailed extends ClientState {
   final String error;

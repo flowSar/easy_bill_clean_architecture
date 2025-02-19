@@ -76,29 +76,44 @@ class _ItemsScreenState extends State<ItemsScreen> {
               placeholder: 'Search item name',
               title: 'Item Name',
               icon: Icon(Icons.search),
-              onChanged: (value) {
-                setState(() {
-                  // dataProvider.flitterLists(value, 'items');
-                });
+              onChanged: (keyWord) {
+                context.read<ItemBloc>().add(FilterItemsEvent(name: keyWord));
               },
               onErase: () {
-                // dataProvider.flitterLists('', 'items');
-                // setState(() {
-                //   _searchKeyWord.text = '';
-                // });
+                context.read<ItemBloc>().add(FilterItemsEvent(name: ''));
+                setState(() {
+                  _searchKeyWord.text = '';
+                });
               },
             ),
-            BlocBuilder<ItemBloc, ItemState>(
-              builder: (context, state) {
-                if (state is ItemFailedState) {
-                  return Text('loading items failed : ${state.error}');
+            BlocConsumer<ItemBloc, ItemState>(
+              listener: (context, state) {
+                if (state is ItemAdded) {
+                  context.read<ItemBloc>().add(GetItemEvent());
+                  displaySnackBar('the Item was created successfully');
                 }
+                if (state is ItemUpdated) {
+                  displaySnackBar('the Item was updated successfully');
+                  context.read<ItemBloc>().add(GetItemEvent());
+                }
+                if (state is ItemDeleted) {
+                  displaySnackBar('the Item was deleted successfully');
+                  context.read<ItemBloc>().add(GetItemEvent());
+                }
+              },
+              builder: (context, state) {
                 if (state is ItemLoadingState) {
                   return CustomCircularProgress(
                     w: 100,
                     h: 100,
                     strokeWidth: 6,
                   );
+                }
+                if (state is ItemFailedState) {
+                  return Text('loading items failed : ${state.error}');
+                }
+                if (state is ItemDeletedFailed) {
+                  showErrorDialog(context, 'deleteItem', 'delete Item Failed');
                 }
                 if (state is ItemLoadedState) {
                   items = state.items;
@@ -131,11 +146,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
                                   },
                                   onDelete: () {
                                     try {
-                                      // context.read<DataProvider>().deleteItem(
-                                      //       items[index].id!,
-                                      //     );
-                                      displaySnackBar(
-                                          'the Item was created successfully');
+                                      context.read<ItemBloc>().add(
+                                          DeleteItemEvent(
+                                              id: items[index].id!));
                                     } catch (e) {
                                       showErrorDialog(
                                           context, "error", e.toString());

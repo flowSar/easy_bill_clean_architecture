@@ -33,15 +33,23 @@ class ClientRepositoryImpl implements ClientRepository {
   }
 
   @override
-  Future<Either<Failure, int>> deleteClient(int id) {
-    // TODO: implement deleteClient
-    throw UnimplementedError();
+  Future<Either<Failure, int>> deleteClient(int id) async {
+    try {
+      final result = await clientLocalDataSource.deleteClient(id);
+      return Right(result);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 
   @override
-  Future<Either<Failure, int>> updateClient(Client client) {
-    // TODO: implement updateClient
-    throw UnimplementedError();
+  Future<Either<Failure, int>> updateClient(Client client) async {
+    try {
+      final result = await clientLocalDataSource.updateClient(client);
+      return Right(result);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 
   @override
