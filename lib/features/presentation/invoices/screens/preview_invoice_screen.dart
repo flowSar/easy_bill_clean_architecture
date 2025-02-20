@@ -1,7 +1,12 @@
 import 'dart:io';
+import 'package:easy_bill_clean_architecture/features/presentation/business_info/bloc/business_info_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/business_info/bloc/business_info_state.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_event.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/constance/styles.dart';
@@ -18,10 +23,9 @@ class PreviewInvoiceScreen extends StatelessWidget {
 
   const PreviewInvoiceScreen({super.key, this.invoice});
 
-  BusinessInfo? get businessInfo => null;
-
   @override
   Widget build(BuildContext context) {
+    BusinessInfo? businessInfo;
     // pop up when this function called
     void returnBack() {
       Navigator.of(context).pop();
@@ -83,13 +87,17 @@ class PreviewInvoiceScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Consumer<DataProvider>(
-                      //     builder: (context, dataProvider, child) {
-                      //   return Text(
-                      //     dataProvider.businessInfo!.businessName,
-                      //     style: kTextStyle2b.copyWith(fontSize: 26),
-                      //   );
-                      // }),
+                      BlocBuilder<BusinessInfoBloc, BusinessInfoState>(
+                          builder: (context, state) {
+                        String businessName = '';
+                        if (state is BusinessInfoLoaded) {
+                          businessName = state.businessInfo.businessName;
+                        }
+                        return Text(
+                          businessName,
+                          style: kTextStyle2b.copyWith(fontSize: 26),
+                        );
+                      }),
                       Text(
                         'Invoice#',
                         style: TextStyle(
@@ -216,48 +224,64 @@ class PreviewInvoiceScreen extends StatelessWidget {
                 ),
               ),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  // BusinessInfo? businessInfo =
-                  //     context.read<DataProvider>().businessInfo;
-                  // File? signatureFile = context.read<DataProvider>().signature;
-                  File? signatureFile = null;
-                  PdfGenerator(currency);
-
-                  if (signatureFile == null) {
-                    displayErrorDialog('Please add Your signature');
-                  } else {
-                    final pdfFile = await PdfGenerator.generatePdf(
-                      invoice!,
-                      businessInfo,
-                      signatureFile,
-                    );
-                    PdfGenerator.openFile(pdfFile);
-                  }
-                } catch (e) {
-                  displayErrorDialog(e.toString());
+            BlocBuilder<SettingsBloc, SettingsState>(
+              builder: (context, state) {
+                File? signatureFile;
+                if (state.signature != null) {
+                  signatureFile = state.signature;
                 }
+                return BlocBuilder<BusinessInfoBloc, BusinessInfoState>(
+                  builder: (context, state) {
+                    if (state is BusinessInfoLoaded) {
+                      businessInfo = state.businessInfo;
+                    }
+                    return ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          // BusinessInfo? businessInfo =
+                          //     context.read<DataProvider>().businessInfo;
+                          // File? signatureFile = context.read<DataProvider>().signature;
+
+                          PdfGenerator(currency);
+
+                          if (signatureFile == null) {
+                            displayErrorDialog('Please add Your signature');
+                          } else {
+                            final pdfFile = await PdfGenerator.generatePdf(
+                              invoice!,
+                              businessInfo,
+                              signatureFile,
+                            );
+                            PdfGenerator.openFile(pdfFile);
+                          }
+                        } catch (e) {
+                          displayErrorDialog(e.toString());
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                          side: BorderSide(),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          )),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        margin: EdgeInsets.only(top: 4),
+                        child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 16),
+                            child: Text(
+                              'Save as Pdf',
+                              style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500),
+                              textAlign: TextAlign.center,
+                            )),
+                      ),
+                    );
+                  },
+                );
               },
-              style: ElevatedButton.styleFrom(
-                  side: BorderSide(),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  )),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                margin: EdgeInsets.only(top: 4),
-                child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                    child: Text(
-                      'Save as Pdf',
-                      style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500),
-                      textAlign: TextAlign.center,
-                    )),
-              ),
             )
           ],
         ),

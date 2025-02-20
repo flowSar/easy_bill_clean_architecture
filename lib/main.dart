@@ -3,6 +3,7 @@ import 'package:easy_bill_clean_architecture/features/presentation/clients/bloc/
 import 'package:easy_bill_clean_architecture/features/presentation/invoices/bloc/invoice_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/items/bloc/item_bloc.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_event.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:easy_bill_clean_architecture/injection_dependencies.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +32,10 @@ void main() async {
           create: (context) => sl<InvoiceBloc>(),
         ),
         BlocProvider(
-          create: (context) => sl<SettingsBloc>(),
+          create: (context) => sl<SettingsBloc>()
+            ..add(GetCurrencyEvent())
+            ..add(GetThemeModeEvent())
+            ..add(GetSignatureEvent()),
         ),
       ],
       child: MyApp(),

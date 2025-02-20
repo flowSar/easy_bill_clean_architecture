@@ -1,4 +1,7 @@
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../constance/colors.dart';
@@ -67,10 +70,14 @@ class ItemCard extends StatelessWidget {
                   children: [
                     Padding(
                       padding: EdgeInsets.only(left: 3),
-                      child: Text(
-                        tailing!,
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
+                      child: BlocBuilder<SettingsBloc, SettingsState>(
+                        builder: (context, state) {
+                          return Text(
+                            '${tailing!} ${state.currency}',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold),
+                          );
+                        },
                       ),
                     ),
                     // Consumer<SettingsProvider>(

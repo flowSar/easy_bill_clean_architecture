@@ -63,8 +63,7 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
   void initState() {
     invoiceId = uuid.v4();
     loadBusinessInfo();
-    context.read<SettingsBloc>().add(GetCurrencyEvent());
-    // context.read<SettingsBloc>().add(GetThemeModeEvent());
+
     date = DateFormat('dd/MM/yyyy').format(now);
     super.initState();
   }
@@ -72,7 +71,6 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
   Future loadBusinessInfo() async {
     try {
       context.read<BusinessInfoBloc>().add(GetBusinessInfoEvent());
-      // context.read<SettingsBloc>().add(GetCurrencyEvent());
     } catch (e) {
       showErrorDialog(context, 'businessInfo', 'business info loading failed');
     }

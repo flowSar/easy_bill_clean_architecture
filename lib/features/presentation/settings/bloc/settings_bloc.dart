@@ -60,8 +60,24 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   }
 
   Future<void> _setSignature(
-      SettingsEvent event, Emitter<SettingsState> emit) async {}
+      SetSignatureEvent event, Emitter<SettingsState> emit) async {
+    try {
+      await settingsUseCase.setSignature(event.signature);
+      emit(state.copyWith(signature: event.signature));
+    } catch (e) {
+      emit(SettingsUpdateFailed(e.toString()));
+    }
+  }
 
   Future<void> _getSignature(
-      SettingsEvent event, Emitter<SettingsState> emit) async {}
+      GetSignatureEvent event, Emitter<SettingsState> emit) async {
+    try {
+      final result = await settingsUseCase.getSignature();
+      emit(state.copyWith(
+        signature: result,
+      ));
+    } catch (e) {
+      emit(SettingsUpdateFailed(e.toString()));
+    }
+  }
 }

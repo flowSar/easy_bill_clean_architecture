@@ -22,24 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late bool _isSwitched = false;
 
   @override
-  void initState() {
-    // _isSwitched = context.read<SettingsProvider>().isDarMode;
-    // load currency / or selected currency
-    // context.read<SettingsProvider>().loadCurrency();
-    // assign loaded currency to selectedCurrency
-    context.read<SettingsBloc>().add(GetCurrencyEvent());
-    context.read<SettingsBloc>().add(GetThemeModeEvent());
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // load language dictionary
-    // SettingsProvider language = context.watch<SettingsProvider>();
-    void replaceCurrentScreen() {
-      context.replace('/signIn');
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Center(child: Text('Settings')),

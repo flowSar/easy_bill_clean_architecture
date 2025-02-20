@@ -1,13 +1,13 @@
 import 'dart:io';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_event.dart';
+import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:signature/signature.dart';
 import 'dart:typed_data';
 import 'dart:math';
-
-import 'package:uuid/uuid.dart';
-
 import '../../../../core/widgets/custom_text_button.dart';
 import '../../../../core/widgets/error_dialog.dart';
 
@@ -113,6 +113,9 @@ class _SignatureScreenState extends State<SignatureScreen> {
                       imagePath = await saveImage(signature!);
                       // add the image path to the database and ake it available on the app with provider
                       // context.read<DataProvider>().addSignature(imagePath!);
+                      context
+                          .read<SettingsBloc>()
+                          .add(SetSignatureEvent(File(imagePath!)));
                       addSignaturePath(imagePath!);
                       // get the image file from the imagePath
                       setState(() {
@@ -128,11 +131,20 @@ class _SignatureScreenState extends State<SignatureScreen> {
                 ),
               ],
             ),
-            if (fileImage != null)
-              Image.file(
-                fileImage!,
-                color: isDarkMode ? Colors.white : Colors.black,
-              ),
+            // if (fileImage != null)
+            BlocBuilder<SettingsBloc, SettingsState>(
+              builder: (context, state) {
+                if (state.signature != null) {
+                  fileImage = state.signature!;
+                }
+                isDarkMode = state.isDarkMode!;
+
+                return Image.file(
+                  fileImage!,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                );
+              },
+            ),
             Padding(
                 padding: EdgeInsets.symmetric(vertical: 25),
                 child: Text('this signature is saved locally'))

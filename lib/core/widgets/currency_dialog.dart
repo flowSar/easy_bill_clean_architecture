@@ -19,8 +19,6 @@ class _CurrencyDialogState extends State<CurrencyDialog> {
 
   @override
   void initState() {
-    context.read<SettingsBloc>().add(GetCurrencyEvent());
-    context.read<SettingsBloc>().add(GetThemeModeEvent());
     super.initState();
   }
 
