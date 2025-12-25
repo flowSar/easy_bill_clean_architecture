@@ -3,7 +3,7 @@ import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc
 import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/currency_dialog.dart';
 import '../../../../core/widgets/language_dialog.dart';
@@ -23,87 +23,89 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text('Settings')),
+        title: const Text(
+          'Settings',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(10),
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: EdgeInsets.all(10),
-                child: Text(
-                  'Account & business',
-                  style:
-                      TextStyle(color: Colors.greenAccent[700], fontSize: 20),
-                ),
-              ),
+              _buildSectionHeader(context, 'Account & Business'),
               SelectCard(
-                p: 14,
-                onTap: () async {
-                  context.push('/businessScreen');
-                },
-                leftIcon: Icons.add,
+                onTap: () => context.push('/businessScreen'),
+                leftIcon: Icons.business_center_rounded,
                 middleText: 'Your Business',
-                rightIcon: Icon(Icons.keyboard_arrow_right),
+                rightIcon: const Icon(Icons.chevron_right_rounded, size: 20),
               ),
               SelectCard(
-                p: 14,
-                onTap: () async {
-                  context.push('/aboutScreen');
-                },
-                leftIcon: Icons.info_outline,
-                middleText: 'About',
-                rightIcon: Icon(Icons.keyboard_arrow_right),
+                onTap: () => context.push('/signatureScreen'),
+                leftIcon: Icons.draw_rounded,
+                middleText: 'Signature',
+                rightIcon: const Icon(Icons.chevron_right_rounded, size: 20),
               ),
-              Padding(
-                padding: EdgeInsets.all(10),
-                child: Text(
-                  'general',
-                  style:
-                      TextStyle(color: Colors.greenAccent[700], fontSize: 20),
-                ),
+              SelectCard(
+                onTap: () => context.push('/invoiceTemplateScreen'),
+                leftIcon: Icons.description_rounded,
+                middleText: 'Invoice Templates',
+                rightIcon: const Icon(Icons.chevron_right_rounded, size: 20),
               ),
+              const SizedBox(height: 12),
+              _buildSectionHeader(context, 'Preferences'),
               BlocBuilder<SettingsBloc, SettingsState>(
                 builder: (context, state) {
                   _isSwitched = state.isDarkMode!;
-
                   return SelectCard(
                     onTap: () {},
-                    leftIcon: Icons.nightlight,
-                    middleText: 'Night Mode',
-                    p: 9,
+                    leftIcon: Icons.dark_mode_rounded,
+                    middleText: 'Dark Mode',
                     rightIcon: Switch(
                       value: _isSwitched,
+                      activeColor: isDark ? Colors.white : theme.primaryColor,
                       onChanged: (value) {
                         setState(() {
                           _isSwitched = value;
                           context
                               .read<SettingsBloc>()
                               .add(SetThemeModeEvent(value));
-
-                          // context.read<SettingsProvider>().setDarkMode(value);
                         });
                       },
-                      padding: EdgeInsets.zero,
                     ),
                   );
                 },
+              ),
+              SelectCard(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const LanguageDialog(),
+                  );
+                },
+                leftIcon: Icons.translate_rounded,
+                middleText: 'Language',
+                rightIcon: const Icon(Icons.chevron_right_rounded, size: 20),
               ),
               BlocBuilder<SettingsBloc, SettingsState>(
                 builder: (context, state) {
                   selectedCurrency = state.currency!;
                   return SelectCard(
-                    p: 14,
                     onTap: () {
                       showDialog(
-                          context: context,
-                          builder: (BuildContext context) =>
-                              CurrencyDialog()).then((currency) {
+                        context: context,
+                        builder: (context) => CurrencyDialog(),
+                      ).then((currency) {
                         if (currency != null) {
                           setState(() {
                             selectedCurrency = currency.toString();
@@ -111,68 +113,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         }
                       });
                     },
-                    leftIcon: Icons.currency_exchange,
-                    middleText: '${'Currency'} ($selectedCurrency)',
-                    rightIcon: Icon(Icons.keyboard_arrow_right),
+                    leftIcon: Icons.payments_rounded,
+                    middleText: 'Currency ($selectedCurrency)',
+                    rightIcon:
+                        const Icon(Icons.chevron_right_rounded, size: 20),
                   );
                 },
               ),
+              const SizedBox(height: 12),
+              _buildSectionHeader(context, 'Support & Info'),
               SelectCard(
-                p: 14,
-                onTap: () {
-                  context.push('/signatureScreen');
-                },
-                leftIcon: FontAwesomeIcons.fileSignature,
-                middleText: 'Signature',
-                rightIcon: Icon(
-                  Icons.keyboard_arrow_right,
-                ),
+                onTap: () => context.push('/customerSupportScreen'),
+                leftIcon: Icons.support_agent_rounded,
+                middleText: 'Customer Support',
+                rightIcon: const Icon(Icons.chevron_right_rounded, size: 20),
               ),
               SelectCard(
-                p: 14,
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => LanguageDialog(),
-                  );
-                },
-                leftIcon: FontAwesomeIcons.language,
-                middleText: 'Language',
-                rightIcon: Icon(
-                  Icons.keyboard_arrow_right,
-                ),
+                onTap: () => context.push('/aboutScreen'),
+                leftIcon: Icons.info_rounded,
+                middleText: 'About',
+                rightIcon: const Icon(Icons.chevron_right_rounded, size: 20),
               ),
               SelectCard(
-                p: 14,
-                onTap: () {
-                  context.push(
-                    '/invoiceTemplateScreen',
-                  );
-                },
-                leftIcon: Icons.picture_as_pdf,
-                middleText: 'Invoice templates',
-                rightIcon: Icon(
-                  Icons.keyboard_arrow_right,
-                ),
-              ),
-              SelectCard(
-                p: 14,
-                onTap: () {
-                  context.push('/customerSupportScreen');
-                },
-                leftIcon: Icons.contact_support_outlined,
-                middleText: 'Customer support',
-                rightIcon: Icon(Icons.keyboard_arrow_right),
-              ),
-              SelectCard(
-                p: 14,
                 onTap: () {},
-                leftIcon: Icons.code,
-                middleText: 'Version 1.0.0',
-                rightIcon: Icon(Icons.keyboard_arrow_right),
+                leftIcon: Icons.terminal_rounded,
+                middleText: 'Version',
+                rightIcon: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Text(
+                    '1.0.0',
+                    style: TextStyle(
+                      color: isDark
+                          ? const Color.fromRGBO(255, 255, 255, 0.4)
+                          : const Color.fromRGBO(0, 0, 0, 0.4),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
               ),
+              const SizedBox(height: 30),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 4.0, bottom: 4.0, top: 4.0),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          color: isDark
+              ? const Color.fromRGBO(255, 255, 255, 0.5)
+              : Color.fromRGBO(
+                  theme.primaryColor.red,
+                  theme.primaryColor.green,
+                  theme.primaryColor.blue,
+                  0.7,
+                ),
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2,
         ),
       ),
     );

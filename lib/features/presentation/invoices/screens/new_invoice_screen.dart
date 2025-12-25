@@ -14,14 +14,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
-import 'package:dotted_border/dotted_border.dart';
-import '../../../../core/constance/colors.dart';
+
 import '../../../../core/constance/g_constants.dart';
-import '../../../../core/constance/styles.dart';
+
 import '../../../../core/models/invoice.dart';
 import '../../../../core/utilities/functions.dart';
 import '../../../../core/utilities/scan_bard_code.dart';
-import '../../../../core/widgets/custom_Floating_button.dart';
+
 import '../../../../core/widgets/custom_circular_progress.dart';
 import '../../../../core/widgets/custom_modal_Bottom_sheet.dart';
 import '../../../../core/widgets/empty.dart';
@@ -180,6 +179,7 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
       snackBar(context, msg);
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -193,16 +193,15 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
             }
           },
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
             child: Column(
-              spacing: 8,
+              spacing: 4,
               children: [
-                // check if the clients not selected display card that show that the client is not selected
                 client != null
                     ? UserCard(
                         title: client!.fullName,
-                        subTitle: client!.email!,
-                        elevation: 2,
+                        subTitle: client!.email ?? 'No email',
+                        elevation: 0,
                         onPressed: () {
                           context
                               .push(
@@ -222,7 +221,7 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
                         },
                       )
                     : SelectItemButton(
-                        elevation: 2,
+                        elevation: 0,
                         label: 'Select Client',
                         onPressed: () {
                           context
@@ -240,12 +239,11 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
                           });
                         },
                       ),
-                // consumer for consuming the business info from the dataProviders
                 BlocBuilder<BusinessInfoBloc, BusinessInfoState>(
                     builder: (context, state) {
                   if (state is BusinessInfoFailed) {
                     return SelectItemButton(
-                      elevation: 2,
+                      elevation: 0,
                       label: 'Business Info',
                       onPressed: () {
                         context.push('/businessScreen');
@@ -253,10 +251,15 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
                     );
                   }
                   if (state is BusinessInfoLoading) {
-                    return CustomCircularProgress(
-                      strokeWidth: 2,
-                      h: 35,
-                      w: 35,
+                    return const SizedBox(
+                      height: 40,
+                      child: Center(
+                        child: CustomCircularProgress(
+                          strokeWidth: 2,
+                          h: 24,
+                          w: 24,
+                        ),
+                      ),
                     );
                   }
                   if (state is BusinessInfoLoaded) {
@@ -265,16 +268,18 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
                       onPressed: () {
                         context.push('/businessScreen');
                       },
-                      elevation: 2,
+                      elevation: 0,
                       title: businessInfo!.businessName,
-                      subTitle: businessInfo!.businessEmail!,
+                      subTitle: businessInfo!.businessEmail ?? 'No email',
                     );
                   }
-                  return Text('loading...');
+                  return const SizedBox.shrink();
                 }),
+                const Divider(height: 16),
                 Expanded(
                   child: selectedItems.isNotEmpty
                       ? ListView.builder(
+                          padding: EdgeInsets.zero,
                           itemCount: selectedItems.length,
                           itemBuilder: (context, index) {
                             return SelectedItemCard(
@@ -284,7 +289,7 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
                                   selectedItems.removeAt(index);
                                 });
                               },
-                              bg: greyLight,
+                              bg: Theme.of(context).cardColor,
                               name: selectedItems[index].name,
                               barCode: selectedItems[index].barCode!,
                               quantity: selectedItems[index].quantity!,
@@ -292,79 +297,86 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
                               tax: selectedItems[index].tax!,
                             );
                           })
-                      : Empty(
-                          title: 'No Item was added',
-                          subTitle: 'no item msg',
+                      : const Center(
+                          child: Empty(
+                            title: 'Invoice is empty',
+                            subTitle: 'Add items below',
+                          ),
                         ),
                 ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: TextButton.icon(
+                    onPressed: () {
+                      context
+                          .push(
+                        '/itemsScreen',
+                        extra: ItemScreenParams(
+                          item: null,
+                          mode: ScreenMode.select,
+                        ),
+                      )
+                          .then((selectedItem) async {
+                        if (selectedItem != null) {
+                          Item item = selectedItem as Item;
+                          barCode = item.barCode!;
+                          Item? newItem = await displayBottomModal(item);
 
-                InkWell(
-                  onTap: () {
-                    // navigate the items screen and select item
-                    context
-                        .push(
-                      '/itemsScreen',
-                      extra: ItemScreenParams(
-                        item: null,
-                        mode: ScreenMode.select,
-                      ),
-                    )
-                        .then((selectedItem) async {
-                      if (selectedItem != null) {
-                        Item item = selectedItem as Item;
-                        // initialize the barcode
-                        barCode = item.barCode!;
-                        Item? newItem = await displayBottomModal(item);
-
-                        if (newItem != null) {
-                          setState(() {
-                            selectedItems.add(newItem);
-                          });
+                          if (newItem != null) {
+                            setState(() {
+                              selectedItems.add(newItem);
+                            });
+                          }
                         }
-                      }
-                    });
-                  },
-                  child: DottedBorder(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      color: greyLight,
-                      padding: EdgeInsets.symmetric(
-                        vertical: 6,
-                      ),
-                      child: Row(
-                        spacing: 4,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Add item',
-                            style: kTextStyle2b.copyWith(color: Colors.black),
-                            textAlign: TextAlign.center,
-                          ),
-                          Icon(
-                            Icons.add,
-                          ),
-                        ],
-                      ),
+                      });
+                    },
+                    icon: const Icon(Icons.add_circle_outline_rounded),
+                    label: const Text('ADD NEW ITEM',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.deepPurple,
+                      minimumSize: const Size(double.infinity, 44),
                     ),
                   ),
                 ),
                 Container(
-                  width: MediaQuery.of(context).size.width,
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   decoration: BoxDecoration(
-                    color: greyLight,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    vertical: 6,
+                    color: Color.fromRGBO(
+                      Theme.of(context).primaryColor.red,
+                      Theme.of(context).primaryColor.green,
+                      Theme.of(context).primaryColor.blue,
+                      0.1,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: BlocBuilder<SettingsBloc, SettingsState>(
                     builder: (context, state) {
-                      late String currency = '\$';
-                      currency = state.currency!;
-                      return Text(
-                        'Total: $billTotal $currency',
-                        style: kTextStyle2b.copyWith(color: Colors.black),
-                        textAlign: TextAlign.center,
+                      String currency = state.currency ?? '\$';
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Grand Total',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
+                          Text(
+                            '$billTotal $currency',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              color: isDark
+                                  ? Colors.white
+                                  : Theme.of(context).primaryColor,
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -374,127 +386,94 @@ class _NewInvoiceScreenState extends State<NewInvoiceScreen> {
           ),
         ),
         bottomNavigationBar: BottomAppBar(
-          color: greyLight,
-          padding: EdgeInsets.all(0),
-          height: 65,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            spacing: 12,
             children: [
-              CustomFloatingButton(
-                onPressed: () async {
-                  if (selectedItems.isNotEmpty) {
-                    if (client != null) {
-                      try {
-                        fillDataIntoRows(invoiceId, billTotal);
-
-                        // confirm saving invoice by displaying a dialog
-                        displaySaveInvoiceOption(context, (answer) async {
-                          // if the answer is true we save the invoice
-                          if (answer) {
-                            // insert data to database
-                            context
-                                .read<InvoiceBloc>()
-                                .add(AddInvoicesEvent(invoice, invoiceItems));
-
-                            // display snack abr
-                            displaySnackBar(
-                                'the invoice was created successfully');
-
-                            setState(
-                              () {
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    if (selectedItems.isNotEmpty) {
+                      if (client != null) {
+                        try {
+                          fillDataIntoRows(invoiceId, billTotal);
+                          displaySaveInvoiceOption(context, (answer) async {
+                            if (answer) {
+                              context
+                                  .read<InvoiceBloc>()
+                                  .add(AddInvoicesEvent(invoice, invoiceItems));
+                              displaySnackBar('Invoice created successfully');
+                              setState(() {
                                 invoiceItems = [];
                                 selectedItems = [];
-                              },
-                            );
-                          }
-                        });
-                      } catch (e) {
-                        errorDialog(e);
+                              });
+                            }
+                          });
+                        } catch (e) {
+                          errorDialog(e);
+                        }
+                      } else {
+                        showErrorDialog(
+                            context, "Error", 'Please select a client');
                       }
                     } else {
-                      showErrorDialog(
-                          context, "Error ", 'please select the client');
+                      showErrorDialog(context, "Error", 'Invoice is empty');
                     }
-                  } else {
-                    showErrorDialog(
-                        context, "Error ", 'please select new Item');
-                  }
-                },
-                w: 90,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Save',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      Icon(
-                        Icons.save,
-                        color: Colors.white,
-                      )
-                    ],
+                  },
+                  icon: const Icon(Icons.save_rounded, color: Colors.white),
+                  label: const Text('SAVE',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                    minimumSize: const Size(0, 48),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
               ),
-              CustomFloatingButton(
-                onPressed: () async {
-                  try {
-                    // scan bar code
-                    String result = await scanner.scan(context);
-                    barCode = result;
-                    // check if the barcode was scanned
-                    if (barCode != '-1') {
-                      // check if the item with this barCode exist in database
-                      Item? item = filterByBarCode(barCode.trim());
-                      // check if the item was found and not null
-                      if (item != null) {
-                        // if the item exist open the bottomSheetModal
-                        Item? newItem = await displayBottomModal(item);
-
-                        if (newItem != null) {
-                          setState(() {
-                            selectedItems.add(newItem);
-                          });
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    try {
+                      String result = await scanner.scan(context);
+                      barCode = result;
+                      if (barCode != '-1') {
+                        Item? item = filterByBarCode(barCode.trim());
+                        if (item != null) {
+                          Item? newItem = await displayBottomModal(item);
+                          if (newItem != null) {
+                            setState(() {
+                              selectedItems.add(newItem);
+                            });
+                          }
+                        } else {
+                          Item newItem = Item(
+                            barCode: barCode,
+                            name: '',
+                            price: 0,
+                            quantity: 0,
+                            tax: 0.0,
+                            description: null,
+                            unit: null,
+                            stock: null,
+                          );
+                          navigateTo(newItem);
                         }
-                      } else {
-                        // Navigate to add new item screen
-                        Item newItem = Item(
-                          barCode: barCode,
-                          name: '',
-                          price: 0,
-                          quantity: 0,
-                          tax: 0.0,
-                          description: null,
-                          unit: null,
-                          stock: null,
-                        );
-                        // if the item with the bar code that we scanned not exist in database we automatically
-                        // navigate the use to the newItemScreen so he can add this new Item
-                        navigateTo(newItem);
-                        // context.push('/newItemScreen', extra: newItem);
                       }
+                    } catch (e) {
+                      displayDialogError(e);
                     }
-                  } catch (e) {
-                    displayDialogError(e);
-                  }
-                },
-                w: 90,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Scan',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      Icon(
-                        Icons.barcode_reader,
-                        color: Colors.white,
-                      )
-                    ],
+                  },
+                  icon: const Icon(Icons.qr_code_scanner_rounded),
+                  label: const Text('SCAN',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.blue.shade700,
+                    side: BorderSide(color: Colors.blue.shade700),
+                    minimumSize: const Size(0, 48),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
               ),

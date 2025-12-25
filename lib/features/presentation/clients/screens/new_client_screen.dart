@@ -5,13 +5,11 @@ import 'package:easy_bill_clean_architecture/features/presentation/clients/bloc/
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+
 import 'package:uuid/uuid.dart';
 
-import '../../../../core/constance/colors.dart';
 import '../../../../core/constance/g_constants.dart';
 import '../../../../core/constance/icons.dart';
-import '../../../../core/constance/styles.dart';
 import '../../../../core/utilities/functions.dart';
 import '../../../../core/widgets/client_Image.dart';
 import '../../../../core/widgets/custom_badge.dart';
@@ -21,8 +19,7 @@ import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/error_dialog.dart';
 import '../../../domain/clients/model/client.dart';
 
-final _formKey = GlobalKey<FormState>();
-var uuid = Uuid();
+const uuid = Uuid();
 
 class NewClientScreen extends StatefulWidget {
   final Client? client;
@@ -42,6 +39,7 @@ class _NewClientScreenState extends State<NewClientScreen> {
   late final TextEditingController _phoneNumber;
   int? clientId;
   bool loading = false;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final ScreenMode mode;
 
   @override
@@ -68,19 +66,18 @@ class _NewClientScreenState extends State<NewClientScreen> {
     showErrorDialog(context, 'Error', error);
   }
 
-  // i get error after I leas this screen saying the TextField is being used after being disposed.
-  // that why I removed the dispose from here and I did add it to the CustomTextField component
-  // @override
-  // void dispose() {
-  //   _fullName.dispose();
-  //   _email.dispose();
-  //   _fullName.dispose();
-  //   _address.dispose();
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    _fullName.dispose();
+    _address.dispose();
+    _email.dispose();
+    _phoneNumber.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     void displaySnackBar(String msg) {
       snackBar(context, msg);
     }
@@ -93,84 +90,107 @@ class _NewClientScreenState extends State<NewClientScreen> {
       _phoneNumber.clear();
     }
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('New Client'),
-          leading: IconButton(
-              onPressed: () {
-                context.pop();
-              },
-              icon: Icon(Icons.close)),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          mode == ScreenMode.navigate ? 'New Client' : 'Edit Client',
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        body: Padding(
-          padding: EdgeInsets.all(10),
-          child: SingleChildScrollView(
-            child: BlocListener<ClientBloc, ClientState>(
-              listener: (context, state) {
-                if (state is ClientUpdateFailed) {
-                  snackBar(context, 'client updated failed');
-                }
-                if (state is ClientUpdated) {
-                  snackBar(context, 'client updated');
-                }
-              },
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    // change the icons of the client based on the client fullName
-                    fullName == ''
-                        ? Custombadge(
-                            icon: kUserIcon,
-                            labelIcon: Icons.image,
-                            labelBg: Colors.blueGrey,
-                          )
-                        : ClientImage(
-                            cName: fullName,
-                            w: 90,
-                            h: 90,
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () => context.pop(),
+          icon: const Icon(Icons.close_rounded),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: BlocListener<ClientBloc, ClientState>(
+            listener: (context, state) {
+              if (state is ClientUpdateFailed) {
+                snackBar(context, 'Client update failed');
+              }
+              if (state is ClientUpdated) {
+                snackBar(context, 'Client updated');
+              }
+            },
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  // Profile Image Section
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Color.fromRGBO(
+                            theme.primaryColor.red,
+                            theme.primaryColor.green,
+                            theme.primaryColor.blue,
+                            0.2,
                           ),
-                    CustomTextField(
-                      readOnly: loading,
-                      keyType: kKeyTextType,
-                      controller: _fullName,
-                      placeholder: 'Full Name',
-                      title: 'fullName',
-                      bg: kTextInputBg1,
-                      validator: (name) =>
-                          name!.length < 3 ? 'Please Insert valid Input' : null,
-                      onChanged: (value) {
-                        setState(() {
-                          fullName = value;
-                        });
-                      },
+                          width: 2,
+                        ),
+                      ),
+                      child: fullName == ''
+                          ? Custombadge(
+                              icon: kUserIcon,
+                              labelIcon: Icons.image,
+                              labelBg: theme.primaryColor,
+                            )
+                          : ClientImage(
+                              cName: fullName,
+                              w: 100,
+                              h: 100,
+                            ),
                     ),
-                    CustomTextField(
-                      readOnly: loading,
-                      keyType: kKeyTextType,
-                      controller: _address,
-                      placeholder: 'Address',
-                      title: 'Address',
-                      bg: kTextInputBg1,
-                    ),
-                    CustomTextField(
-                      readOnly: loading,
-                      keyType: kKeyEmailType,
-                      controller: _email,
-                      placeholder: 'Email',
-                      title: 'Email',
-                      bg: kTextInputBg1,
-                    ),
-                    CustomTextField(
-                      readOnly: loading,
-                      keyType: kKeyPhoneType,
-                      controller: _phoneNumber,
-                      placeholder: 'Phone number',
-                      title: 'phoneNumber',
-                      bg: kTextInputBg1,
-                    ),
-                    CustomTextButton(
+                  ),
+                  const SizedBox(height: 24),
+                  CustomTextField(
+                    readOnly: loading,
+                    keyType: kKeyTextType,
+                    controller: _fullName,
+                    placeholder: 'Enter full name',
+                    title: 'Full Name',
+                    validator: (name) =>
+                        name!.length < 3 ? 'Please enter a valid name' : null,
+                    onChanged: (value) {
+                      setState(() {
+                        fullName = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  CustomTextField(
+                    readOnly: loading,
+                    keyType: kKeyTextType,
+                    controller: _address,
+                    placeholder: 'Enter address',
+                    title: 'Address',
+                  ),
+                  const SizedBox(height: 8),
+                  CustomTextField(
+                    readOnly: loading,
+                    keyType: kKeyEmailType,
+                    controller: _email,
+                    placeholder: 'Enter email address',
+                    title: 'Email',
+                  ),
+                  const SizedBox(height: 8),
+                  CustomTextField(
+                    readOnly: loading,
+                    keyType: kKeyPhoneType,
+                    controller: _phoneNumber,
+                    placeholder: 'Enter phone number',
+                    title: 'Phone Number',
+                  ),
+                  const SizedBox(height: 24),
+                  Center(
+                    child: CustomTextButton(
                       onPressed: () async {
                         Client client = Client(
                           id: clientId,
@@ -187,20 +207,16 @@ class _NewClientScreenState extends State<NewClientScreen> {
                               loading = true;
                             });
                             if (mode == ScreenMode.navigate) {
-                              // add client to the database
                               context
                                   .read<ClientBloc>()
                                   .add(AddClientEvent(client));
-                              // displaySnackBar(
-                              //     'The client was added successfully');
                               clearUserInput();
+                              context.pop();
                             } else if (mode == ScreenMode.update) {
                               try {
                                 context
                                     .read<ClientBloc>()
                                     .add(UpdateClientEvent(client));
-                                // displaySnackBar(
-                                //     'The client was updated successfully');
                               } catch (e) {
                                 displayErrorDialog(e);
                               }
@@ -220,18 +236,25 @@ class _NewClientScreenState extends State<NewClientScreen> {
                         }
                       },
                       label: loading
-                          ? CustomCircularProgress()
+                          ? const CustomCircularProgress()
                           : Text(
-                              mode == ScreenMode.navigate ? 'save' : 'update',
-                              style: kTextStyle2b,
+                              mode == ScreenMode.navigate
+                                  ? 'Save Client'
+                                  : 'Update Client',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
-                      w: 120,
-                      h: 50,
-                      bg: Colors.green,
+                      w: 180,
+                      h: 56,
+                      bg: theme.primaryColor,
                       fg: Colors.white,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
               ),
             ),
           ),

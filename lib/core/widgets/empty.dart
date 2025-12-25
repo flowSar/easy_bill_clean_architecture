@@ -1,9 +1,4 @@
-
 import 'package:flutter/material.dart';
-import 'package:dotted_border/dotted_border.dart';
-
-import '../constance/styles.dart';
-import 'custom_text_button.dart';
 
 class Empty extends StatelessWidget {
   final String title;
@@ -21,45 +16,70 @@ class Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
-      child: DottedBorder(
-        dashPattern: [6, 3, 2, 3],
-        color: Colors.grey,
-        radius: Radius.circular(20),
-        strokeWidth: 2,
-        padding: EdgeInsets.all(10),
-        child: SizedBox(
-          width: MediaQuery.sizeOf(context).width * 0.8,
-          child: Column(
-            spacing: 10,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.search,
-                size: 100,
-                color: Colors.grey[600],
+    final theme = Theme.of(context);
+    final primary = theme.primaryColor;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(
+                    primary.red, primary.green, primary.blue, 0.05),
+                shape: BoxShape.circle,
               ),
-              Text(
-                title,
-                style: kTextStyle2b,
+              child: Icon(
+                Icons.receipt_long_rounded,
+                size: 64,
+                color: theme.brightness == Brightness.dark
+                    ? const Color.fromRGBO(255, 255, 255, 0.5)
+                    : Color.fromRGBO(
+                        primary.red, primary.green, primary.blue, 0.4),
               ),
-              Text(
-                subTitle,
-                style: kTextStyle2,
-                textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
-              btnLabel == null
-                  ? Text('')
-                  : CustomTextButton(
-                      onPressed: onPressed ?? () {},
-                      label: Text(btnLabel!),
-                      w: 150,
-                      bg: Colors.green,
-                      fg: Colors.white,
-                    ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subTitle,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (btnLabel != null) ...[
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: onPressed ?? () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                child: Text(
+                  btnLabel!,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );

@@ -8,8 +8,6 @@ import '../constance/styles.dart';
 import 'custom_text_button.dart';
 import 'custom_text_field.dart';
 
-final _formKey = GlobalKey<FormState>();
-
 class CustomModalBottomSheet extends StatefulWidget {
   final String? barCode;
   final Item? item;
@@ -26,6 +24,7 @@ class _CustomModalBottomSheetState extends State<CustomModalBottomSheet> {
   late final TextEditingController _quantity;
   late final TextEditingController _tax;
   bool isDarkMode = false;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   // late Item? foundItem;
 
@@ -45,6 +44,15 @@ class _CustomModalBottomSheetState extends State<CustomModalBottomSheet> {
     // isDarkMode = context.read<SettingsProvider>().isDarMode;
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _itemName.dispose();
+    _price.dispose();
+    _quantity.dispose();
+    _tax.dispose();
+    super.dispose();
   }
 
   @override

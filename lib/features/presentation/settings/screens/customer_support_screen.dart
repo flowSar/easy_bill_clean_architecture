@@ -6,8 +6,6 @@ import '../../../../core/widgets/custom_text_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/error_dialog.dart';
 
-final _formKey = GlobalKey<FormState>();
-
 class CustomerSupportScreen extends StatefulWidget {
   const CustomerSupportScreen({super.key});
 
@@ -19,6 +17,7 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
   late TextEditingController _msgText;
   late TextEditingController _subject;
   late int msgLength = 0;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -30,9 +29,9 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    super.dispose();
     _msgText.dispose();
+    _subject.dispose();
+    super.dispose();
   }
 
   String? encodeQueryParameters(Map<String, String> params) {
@@ -63,80 +62,121 @@ class _CustomerSupportScreenState extends State<CustomerSupportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('Customer support'),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Customer Support',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        body: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding:
-                  EdgeInsets.only(top: 80, left: 10, right: 10, bottom: 10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CustomTextField(
-                    title: 'Subject',
-                    bg: Colors.grey[300],
-                    controller: _subject,
-                    placeholder: 'subject',
-                    onErase: () {
-                      _subject.clear();
-                    },
-                    validator: (subject) =>
-                        subject!.length < 4 ? 'message subject missing' : null,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4, horizontal: 10),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(10),
+        centerTitle: true,
+      ),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: Column(
+              children: [
+                CustomTextField(
+                  title: 'Subject',
+                  controller: _subject,
+                  placeholder: 'What can we help you with?',
+                  onErase: () => _subject.clear(),
+                  validator: (subject) =>
+                      subject!.length < 4 ? 'Message subject missing' : null,
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color.fromRGBO(255, 255, 255, 0.05)
+                          : const Color.fromRGBO(0, 0, 0, 0.03),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color.fromRGBO(255, 255, 255, 0.1)
+                            : const Color.fromRGBO(0, 0, 0, 0.05),
                       ),
-                      child: Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: TextFormField(
-                          controller: _msgText,
-                          validator: (msg) =>
-                              msg!.length < 10 ? 'message is to short' : null,
-                          maxLength: 150,
-                          minLines: 8,
-                          keyboardType: kKeyTextType,
-                          onChanged: (msg) {
-                            setState(() {
-                              msgLength = msg.length;
-                            });
-                          },
-                          maxLines: null,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            fillColor: Colors.grey[300],
-                            focusColor: Colors.redAccent,
-                            hintText:
-                                'Describe your issue in less than 150 character',
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      child: TextFormField(
+                        controller: _msgText,
+                        validator: (msg) =>
+                            msg!.length < 10 ? 'Message is too short' : null,
+                        maxLength: 150,
+                        minLines: 6,
+                        keyboardType: kKeyTextType,
+                        onChanged: (msg) {
+                          setState(() {
+                            msgLength = msg.length;
+                          });
+                        },
+                        maxLines: null,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText:
+                              'Describe your issue in less than 150 characters',
+                          hintStyle: TextStyle(
+                            fontSize: 14,
+                            color: isDark
+                                ? const Color.fromRGBO(255, 255, 255, 0.3)
+                                : const Color.fromRGBO(0, 0, 0, 0.3),
                           ),
+                          counterText: "",
                         ),
                       ),
                     ),
                   ),
-                  CustomTextButton(
-                      onPressed: () {
-                        bool? result = _formKey.currentState?.validate();
-                        if (result == true) {
-                          _launchEmail(_subject.text, _msgText.text);
-                        } else {
-                          showErrorDialog(context, 'Error',
-                              'please insert valid input Subject+message');
-                        }
-                      },
-                      label: Text('Send'),
-                      bg: Colors.green,
-                      fg: Colors.white)
-                ],
-              ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: Text(
+                      '$msgLength / 150',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? const Color.fromRGBO(255, 255, 255, 0.4)
+                            : const Color.fromRGBO(0, 0, 0, 0.4),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Center(
+                  child: CustomTextButton(
+                    onPressed: () {
+                      bool? result = _formKey.currentState?.validate();
+                      if (result == true) {
+                        _launchEmail(_subject.text, _msgText.text);
+                      } else {
+                        showErrorDialog(context, 'Error',
+                            'Please enter a valid subject and message');
+                      }
+                    },
+                    label: const Text(
+                      'Send Message',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    bg: theme.primaryColor,
+                    fg: Colors.white,
+                    w: 200,
+                    h: 56,
+                  ),
+                )
+              ],
             ),
           ),
         ),

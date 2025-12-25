@@ -1,7 +1,4 @@
-import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_bloc.dart';
-import 'package:easy_bill_clean_architecture/features/presentation/settings/bloc/settings_state.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 class CustomTextField extends StatefulWidget {
@@ -39,85 +36,105 @@ class CustomTextField extends StatefulWidget {
 }
 
 class _CustomTextFieldState extends State<CustomTextField> {
-  bool isDarkMode = false;
   late FocusNode _focusNode;
   bool _isFocused = false;
 
   @override
   void initState() {
-    // isDarkMode = context.read<SettingsProvider>().isDarMode;
     _focusNode = FocusNode();
-
-    _focusNode.addListener(() {
-      setState(() {
-        _isFocused = _focusNode.hasFocus || widget.controller!.text.isNotEmpty;
-      });
-    });
+    _focusNode.addListener(_handleFocusChange);
     super.initState();
+  }
+
+  void _handleFocusChange() {
+    if (mounted) {
+      setState(() {
+        _isFocused = _focusNode.hasFocus ||
+            (widget.controller?.text.isNotEmpty ?? false);
+      });
+    }
   }
 
   @override
   void dispose() {
-    widget.controller?.dispose();
+    _focusNode.removeListener(_handleFocusChange);
+    _focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(
-      builder: (context, state) {
-        bool isDarkMode = false;
-        isDarkMode = state.isDarkMode!;
-        return Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: widget.m!.$1, vertical: widget.m!.$2),
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.white : widget.bg,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 200),
-                  style: TextStyle(
-                    color: _isFocused ? Colors.blue : Colors.grey,
-                    fontSize:
-                        _isFocused ? 14 : 0, // Shrink label when unfocused
-                  ),
-                  child: _isFocused
-                      ? Text('${widget.title}: ') // Label when focused
-                      : SizedBox.shrink(),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          horizontal: widget.m!.$1, vertical: widget.m!.$2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.title.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 4),
+              child: Text(
+                widget.title,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: isDark
+                      ? const Color.fromRGBO(255, 255, 255, 0.7)
+                      : const Color.fromRGBO(0, 0, 0, 0.6),
                 ),
-                TextFormField(
-                  readOnly: widget.readOnly,
-                  initialValue: widget.initialValue,
-                  keyboardType: widget.keyType ?? TextInputType.text,
-                  controller: widget.controller,
-                  onChanged: widget.onChanged,
-                  focusNode: _focusNode,
-                  style: isDarkMode ? TextStyle(color: Colors.red) : null,
-                  onTap: () {},
-                  decoration: InputDecoration(
-                    hintText: widget.placeholder,
-                    icon: widget.icon,
-                    suffix: GestureDetector(
-                      onTap: widget.onErase,
-                      child: Icon(
-                        Icons.close,
-                      ),
-                    ),
-                    border: InputBorder.none,
-                  ),
-                  validator: widget.validator,
-                )
-              ],
+              ),
+            ),
+          Container(
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color.fromRGBO(255, 255, 255, 0.05)
+                  : widget.bg ?? const Color.fromRGBO(0, 0, 0, 0.03),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _isFocused
+                    ? theme.primaryColor
+                    : (isDark
+                        ? const Color.fromRGBO(255, 255, 255, 0.1)
+                        : const Color.fromRGBO(0, 0, 0, 0.05)),
+              ),
+            ),
+            child: TextFormField(
+              readOnly: widget.readOnly,
+              initialValue: widget.initialValue,
+              keyboardType: widget.keyType ?? TextInputType.text,
+              controller: widget.controller,
+              onChanged: widget.onChanged,
+              focusNode: _focusNode,
+              validator: widget.validator,
+              style: TextStyle(
+                fontSize: 15,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              decoration: InputDecoration(
+                hintText: widget.placeholder,
+                prefixIcon: widget.icon,
+                hintStyle: TextStyle(
+                  color: isDark
+                      ? const Color.fromRGBO(255, 255, 255, 0.3)
+                      : const Color.fromRGBO(0, 0, 0, 0.3),
+                ),
+                suffixIcon: widget.controller?.text.isNotEmpty == true &&
+                        widget.onErase != null
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: 20),
+                        onPressed: widget.onErase,
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.all(16),
+              ),
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

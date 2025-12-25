@@ -4,10 +4,8 @@ import 'package:easy_bill_clean_architecture/features/presentation/items/bloc/it
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constance/colors.dart';
 import '../../../../core/constance/g_constants.dart';
 import '../../../../core/utilities/functions.dart';
-import '../../../../core/widgets/custom_Floating_button.dart';
 import '../../../../core/widgets/custom_circular_progress.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/empty.dart';
@@ -59,23 +57,30 @@ class _ItemsScreenState extends State<ItemsScreen> {
   }
 
   @override
+  void dispose() {
+    _searchKeyWord.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Manage Items'),
-        automaticallyImplyLeading: false,
+        title: const Text('Manage Items',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(5),
-        child: Column(
-          children: [
-            CustomTextField(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            child: CustomTextField(
               controller: _searchKeyWord,
-              bg: kTextInputBg1,
               placeholder: 'Search item name',
-              title: 'Item Name',
-              icon: Icon(Icons.search),
+              title: 'Item',
+              icon: Icon(Icons.search_rounded, color: theme.primaryColor),
               onChanged: (keyWord) {
                 context.read<ItemBloc>().add(FilterItemsEvent(name: keyWord));
               },
@@ -86,147 +91,117 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 });
               },
             ),
-            BlocConsumer<ItemBloc, ItemState>(
+          ),
+          Expanded(
+            child: BlocConsumer<ItemBloc, ItemState>(
               listener: (context, state) {
-                if (state is ItemAdded) {
+                if (state is ItemAdded ||
+                    state is ItemUpdated ||
+                    state is ItemDeleted) {
                   context.read<ItemBloc>().add(GetItemEvent());
-                  displaySnackBar('the Item was created successfully');
-                }
-                if (state is ItemUpdated) {
-                  displaySnackBar('the Item was updated successfully');
-                  context.read<ItemBloc>().add(GetItemEvent());
-                }
-                if (state is ItemDeleted) {
-                  displaySnackBar('the Item was deleted successfully');
-                  context.read<ItemBloc>().add(GetItemEvent());
+                  if (state is ItemAdded)
+                    displaySnackBar('Item created successfully');
+                  if (state is ItemUpdated)
+                    displaySnackBar('Item updated successfully');
+                  if (state is ItemDeleted)
+                    displaySnackBar('Item deleted successfully');
                 }
               },
               builder: (context, state) {
                 if (state is ItemLoadingState) {
-                  return CustomCircularProgress(
-                    w: 100,
-                    h: 100,
-                    strokeWidth: 6,
-                  );
+                  return const Center(child: CustomCircularProgress());
                 }
                 if (state is ItemFailedState) {
-                  return Text('loading items failed : ${state.error}');
+                  return Center(
+                      child: Text('Loading items failed: ${state.error}'));
                 }
                 if (state is ItemDeletedFailed) {
-                  showErrorDialog(context, 'deleteItem', 'delete Item Failed');
+                  showErrorDialog(context, 'Delete Item', 'Delete Item Failed');
                 }
                 if (state is ItemLoadedState) {
                   items = state.items;
                 }
-                return Expanded(
-                  child: items.isNotEmpty
-                      ? RefreshIndicator(
-                          onRefresh: loadItemsData,
-                          child: ListView.builder(
-                              padding: EdgeInsets.only(bottom: height * 0.085),
-                              itemCount: items.length,
-                              itemBuilder: (context, index) {
-                                return ItemCard(
-                                  title: items[index].name,
-                                  subTitle: items[index].description,
-                                  tailing: items[index].price.toString(),
-                                  onTap: () {
-                                    Item currentItem = items[index];
-                                    if (widget.mode == ScreenMode.select) {
-                                      context.pop(currentItem);
-                                    } else {
-                                      context.push(
-                                        '/newItemScreen',
-                                        extra: ItemScreenParams(
-                                          item: currentItem,
-                                          mode: ScreenMode.update,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  onDelete: () {
-                                    try {
-                                      context.read<ItemBloc>().add(
-                                          DeleteItemEvent(
-                                              id: items[index].id!));
-                                    } catch (e) {
-                                      showErrorDialog(
-                                          context, "error", e.toString());
-                                    }
-                                  },
-                                  onEdite: () {
-                                    Item currentItem = items[index];
-                                    context.push(
-                                      '/newItemScreen',
-                                      extra: ItemScreenParams(
-                                        item: currentItem,
-                                        mode: ScreenMode.update,
-                                      ),
-                                    );
-                                  },
-                                );
-                              }),
-                        )
-                      : SingleChildScrollView(
-                          child: SizedBox(
-                            height: MediaQuery.sizeOf(context).height * 0.7,
-                            child: Empty(
-                              title: 'No Items was found',
-                              subTitle:
-                                  'tap on Button Below to Create New Item',
-                              btnLabel: 'add New item',
-                              onPressed: () => context.push(
-                                '/newItemScreen',
-                                extra: ItemScreenParams(
-                                  item: null,
-                                  mode: ScreenMode.navigate,
-                                ),
-                              ),
-                            ),
-                          ),
+
+                if (items.isEmpty) {
+                  return Center(
+                    child: Empty(
+                      title: 'No items found',
+                      subTitle: 'Tap the button below to create a new item',
+                      btnLabel: 'Add New Item',
+                      onPressed: () => context.push(
+                        '/newItemScreen',
+                        extra: ItemScreenParams(
+                          item: null,
+                          mode: ScreenMode.navigate,
                         ),
+                      ),
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: loadItemsData,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 80, top: 4),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      return ItemCard(
+                        title: items[index].name,
+                        subTitle: items[index].description,
+                        tailing: items[index].price.toString(),
+                        onTap: () {
+                          Item currentItem = items[index];
+                          if (widget.mode == ScreenMode.select) {
+                            context.pop(currentItem);
+                          } else {
+                            context.push(
+                              '/newItemScreen',
+                              extra: ItemScreenParams(
+                                item: currentItem,
+                                mode: ScreenMode.update,
+                              ),
+                            );
+                          }
+                        },
+                        onDelete: () {
+                          context
+                              .read<ItemBloc>()
+                              .add(DeleteItemEvent(id: items[index].id!));
+                        },
+                        onEdite: () {
+                          Item currentItem = items[index];
+                          context.push(
+                            '/newItemScreen',
+                            extra: ItemScreenParams(
+                              item: currentItem,
+                              mode: ScreenMode.update,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 );
               },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-      floatingActionButton: CustomFloatingButton(
-        w: 120,
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          context
-              .push(
+          context.push(
             '/newItemScreen',
             extra: ItemScreenParams(
               item: null,
               mode: ScreenMode.navigate,
             ),
-          )
-              .then((returnedItem) {
-            if (returnedItem != null) {
-              Item item = returnedItem as Item;
-              setState(() {
-                items.add(item);
-              });
-            }
-          });
+          );
         },
-        child: Row(
-          children: [
-            Icon(
-              Icons.add,
-              color: Colors.white,
-              size: 40,
-            ),
-            Text(
-              'New Item',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
+        label: const Text('New Item',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.add_rounded),
+        backgroundColor: theme.primaryColor,
+        foregroundColor: Colors.white,
       ),
     );
   }

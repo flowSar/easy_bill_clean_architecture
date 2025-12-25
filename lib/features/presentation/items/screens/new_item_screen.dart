@@ -3,21 +3,15 @@ import 'package:easy_bill_clean_architecture/features/presentation/items/bloc/it
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constance/colors.dart';
 import '../../../../core/constance/g_constants.dart';
-import '../../../../core/constance/styles.dart';
 import '../../../../core/utilities/functions.dart';
 import '../../../../core/utilities/scan_bard_code.dart';
-import '../../../../core/widgets/custom_Floating_button.dart';
 import '../../../../core/widgets/custom_circular_progress.dart';
 import '../../../../core/widgets/custom_text_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/error_dialog.dart';
-import '../../../../core/widgets/text_card.dart';
 import '../../../../core/widgets/unit_widget.dart';
 import '../../../domain/items/entity/item.dart';
-
-final _formKey = GlobalKey<FormState>();
 
 class NewItemScreen extends StatefulWidget {
   final Item? item;
@@ -40,6 +34,7 @@ class _NewItemScreenState extends State<NewItemScreen> {
   late final int? _id;
   late String barCode = '00000000000000';
   bool loading = false;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late ScreenMode mode;
 
   @override
@@ -66,6 +61,17 @@ class _NewItemScreenState extends State<NewItemScreen> {
       _tax.text = widget.item!.tax.toString();
     }
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _itemName.dispose();
+    _description.dispose();
+    _price.dispose();
+    _quantity.dispose();
+    _tax.dispose();
+    _stock.dispose();
+    super.dispose();
   }
 
   // create instance from the barCode class so we can call its function to scan the barfCode
@@ -118,195 +124,223 @@ class _NewItemScreenState extends State<NewItemScreen> {
       });
     }
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('New Item'),
-          leading: InkWell(
-            onTap: () => context.pop(),
-            child: Icon(Icons.close),
-          ),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          mode == ScreenMode.navigate ? 'New Item' : 'Edit Item',
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        body: Padding(
-          padding: EdgeInsets.all(10),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextCard(
-                      bg: kTextInputBg1,
-                      w: 340,
-                      p: 14,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'barCode: $barCode',
-                            style: kTextStyle2,
-                          ),
-                          InkWell(
-                            onTap: () async {
-                              String result = await scanner.scan(context);
-                              setState(() {
-                                barCode = result;
-                              });
-                            },
-                            child: Icon(Icons.add),
-                          ),
-                        ],
-                      )),
-                  CustomTextField(
-                    readOnly: loading,
-                    controller: _itemName,
-                    keyType: kKeyTextType,
-                    placeholder: 'Item name',
-                    title: 'Name: ',
-                    bg: kTextInputBg1,
-                    validator: (name) =>
-                        name!.length < 3 ? 'please Insert valid input' : null,
-                    onErase: () => _itemName.clear(),
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () => context.pop(),
+          icon: const Icon(Icons.close_rounded),
+        ),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(10),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                // Barcode Section
+                Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color.fromRGBO(255, 255, 255, 0.05)
+                        : const Color.fromRGBO(0, 0, 0, 0.03),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark
+                          ? const Color.fromRGBO(255, 255, 255, 0.1)
+                          : const Color.fromRGBO(0, 0, 0, 0.05),
+                    ),
                   ),
-                  CustomTextField(
-                    readOnly: loading,
-                    controller: _description,
-                    title: 'Description: ',
-                    keyType: kKeyTextType,
-                    placeholder: 'Description',
-                    bg: kTextInputBg1,
-                    validator: (name) =>
-                        name!.length < 3 ? 'please Insert valid input' : null,
-                    onErase: () => _description.clear(),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Barcode',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? const Color.fromRGBO(255, 255, 255, 0.5)
+                                    : const Color.fromRGBO(0, 0, 0, 0.5),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              barCode,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton.filledTonal(
+                        onPressed: () async {
+                          String result = await scanner.scan(context);
+                          setState(() {
+                            barCode = result;
+                          });
+                        },
+                        icon: const Icon(Icons.qr_code_scanner_rounded),
+                      ),
+                    ],
                   ),
-                  CustomTextField(
-                    readOnly: loading,
-                    controller: _price,
-                    keyType: kKeyNumberType,
-                    placeholder: 'Price',
-                    title: 'Price: ',
-                    bg: kTextInputBg1,
-                    validator: (price) =>
-                        price!.isEmpty ? 'please Insert valid input' : null,
-                    onErase: () => _price.clear(),
-                  ),
-                  CustomTextField(
-                    readOnly: loading,
-                    controller: _quantity,
-                    keyType: kKeyNumberType,
-                    // initialValue: '1',
-                    placeholder: 'Item quantity',
-                    title: 'Quantity: ',
-                    bg: kTextInputBg1,
-                    validator: (quantity) =>
-                        quantity!.isEmpty ? 'please Insert valid input' : null,
-                    onErase: () => _quantity.clear(),
-                  ),
-                  CustomTextField(
-                    readOnly: loading,
-                    controller: _stock,
-                    keyType: kKeyNumberType,
-                    placeholder: 'stock',
-                    title: 'stock: ',
-                    bg: kTextInputBg1,
-                    validator: (tax) =>
-                        tax!.isEmpty ? 'please Insert valid input' : null,
-                    onErase: () => _stock.clear(),
-                  ),
-                  UnitWidget(
-                    unit: _unit,
-                    onChange: (String selectedUnit) {
-                      setState(() {
-                        _unit = selectedUnit;
-                      });
-                    },
-                  ),
-                  CustomTextField(
-                    readOnly: loading,
-                    controller: _tax,
-                    keyType: TextInputType.numberWithOptions(
-                        signed: true, decimal: true),
-                    placeholder: 'Tax Percentage',
-                    title: 'Tax %: ',
-                    bg: kTextInputBg1,
-                    validator: (tax) =>
-                        tax!.isEmpty ? 'please Insert valid input' : null,
-                    onErase: () => _tax.clear(),
-                  ),
-                  CustomTextButton(
+                ),
+                CustomTextField(
+                  readOnly: loading,
+                  controller: _itemName,
+                  keyType: kKeyTextType,
+                  title: 'Item Name',
+                  validator: (name) =>
+                      name!.length < 3 ? 'Please enter a valid name' : null,
+                  onErase: () => _itemName.clear(),
+                ),
+                CustomTextField(
+                  readOnly: loading,
+                  controller: _description,
+                  title: 'Description',
+                  keyType: kKeyTextType,
+                  placeholder: 'Enter item description',
+                  validator: (name) => name!.length < 3
+                      ? 'Please enter a valid description'
+                      : null,
+                  onErase: () => _description.clear(),
+                ),
+                CustomTextField(
+                  readOnly: loading,
+                  controller: _price,
+                  keyType: kKeyNumberType,
+                  placeholder: '0.00',
+                  title: 'Price',
+                  validator: (price) =>
+                      price!.isEmpty ? 'Please enter price' : null,
+                  onErase: () => _price.clear(),
+                ),
+                CustomTextField(
+                  readOnly: loading,
+                  controller: _quantity,
+                  keyType: kKeyNumberType,
+                  // initialValue: '1',
+                  placeholder: '1',
+                  title: 'Quantity',
+                  validator: (quantity) =>
+                      quantity!.isEmpty ? 'Please enter quantity' : null,
+                  onErase: () => _quantity.clear(),
+                ),
+                CustomTextField(
+                  readOnly: loading,
+                  controller: _stock,
+                  keyType: kKeyNumberType,
+                  placeholder: '0',
+                  title: 'Stock',
+                  validator: (val) =>
+                      val!.isEmpty ? 'Please enter stock' : null,
+                  onErase: () => _stock.clear(),
+                ),
+                UnitWidget(
+                  unit: _unit,
+                  onChange: (String selectedUnit) {
+                    setState(() {
+                      _unit = selectedUnit;
+                    });
+                  },
+                ),
+                CustomTextField(
+                  readOnly: loading,
+                  controller: _tax,
+                  keyType: TextInputType.numberWithOptions(
+                      signed: true, decimal: true),
+                  placeholder: '0%',
+                  title: 'Tax %',
+                  validator: (tax) => tax!.isEmpty ? 'Please enter tax' : null,
+                  onErase: () => _tax.clear(),
+                ),
+                Center(
+                  child: CustomTextButton(
                     onPressed: () async {
-                      print('hello');
                       // check if the input is valid before submitting it
                       bool? valid = _formKey.currentState?.validate();
                       if (valid == true) {
                         Item newItem = generateNewItem();
                         try {
-                          // set loading state to true when we are going to submit data
                           updateLoadingStata(true);
 
                           if (mode == ScreenMode.navigate) {
-                            // submit the new item to the database
                             context
                                 .read<ItemBloc>()
                                 .add(AddItemEvent(item: newItem));
-                            // after the submitting succeed remove all user input
-                            displaySnackBar(
-                                'the Item was created successfully');
-                            // clear user input
+                            displaySnackBar('Item created successfully');
                             clearUserInput();
                           } else if (mode == ScreenMode.update) {
-                            // this for updating the item if the mode is not navigate it's update
                             try {
                               context.read<ItemBloc>().add(UpdateItemEvent(
                                     item: newItem,
                                     id: _id!,
                                   ));
-                              displaySnackBar('item was updated successfully');
+                              displaySnackBar('Item updated successfully');
                             } catch (e) {
                               displayErrorDialog(e);
                             }
-                          } else {
-                            displayErrorDialog('check the mode you are using');
                           }
-                          // after data was submitted ste loading to false
                           updateLoadingStata(false);
                         } catch (e) {
-                          // after data was submitting failed we stop the loading and display the error dialog
                           updateLoadingStata(false);
                           displayErrorDialog(e);
                         }
-                        // context.pop(item);
                       }
                     },
                     label: loading
-                        ? CustomCircularProgress()
+                        ? const CustomCircularProgress()
                         : Text(
-                            widget.mode == ScreenMode.navigate
-                                ? 'save'
-                                : 'update',
-                            style: kTextStyle2b,
+                            mode == ScreenMode.navigate
+                                ? 'Save Item'
+                                : 'Update Item',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
-                    w: 120,
-                    h: 50,
-                    bg: Colors.green,
+                    w: 180,
+                    h: 56,
+                    bg: theme.primaryColor,
                     fg: Colors.white,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
           ),
         ),
-        floatingActionButton: CustomFloatingButton(
-          onPressed: () async {
-            String result = await scanner.scan(context);
-            setState(() {
-              barCode = result;
-            });
-          },
-          child: Icon(
-            Icons.barcode_reader,
-            color: Colors.white,
-          ),
-        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          String result = await scanner.scan(context);
+          setState(() {
+            barCode = result;
+          });
+        },
+        backgroundColor: theme.primaryColor,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.barcode_reader),
+        label: const Text('Scan'),
       ),
     );
   }

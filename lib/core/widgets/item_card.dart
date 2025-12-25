@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
-import '../constance/colors.dart';
 import 'custom_popup_menu_button.dart';
 
 class ItemCard extends StatelessWidget {
@@ -27,70 +26,100 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return InkWell(
       onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        child: Container(
-          width: double.infinity,
-          height: 70,
-          decoration: BoxDecoration(
-            color: greyLight,
-            border: Border.all(
-              color: Colors.black,
-            ),
-            borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark
+                ? const Color.fromRGBO(255, 255, 255, 0.1)
+                : const Color.fromRGBO(0, 0, 0, 0.05),
+            width: 1,
           ),
-          child: Padding(
-            padding: EdgeInsets.only(top: 6, bottom: 6, left: 10, right: 4),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    spacing: 4,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        subTitle!,
-                        maxLines: 1,
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
-                  spacing: 2,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(left: 3),
-                      child: BlocBuilder<SettingsBloc, SettingsState>(
-                        builder: (context, state) {
-                          return Text(
-                            '${tailing!} ${state.currency}',
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.bold),
-                          );
-                        },
-                      ),
+          boxShadow: [
+            if (!isDark)
+              const BoxShadow(
+                color: Color.fromRGBO(0, 0, 0, 0.03),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+          ],
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                    // Consumer<SettingsProvider>(
-                    //     builder: (context, settingsProvider, child) => Text(
-                    //           '${settingsProvider.currency}',
-                    //           style: TextStyle(fontWeight: FontWeight.w500),
-                    //         )),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (subTitle != null && subTitle!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subTitle!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: theme.textTheme.bodySmall?.color != null
+                            ? Color.fromRGBO(
+                                theme.textTheme.bodySmall!.color!.red,
+                                theme.textTheme.bodySmall!.color!.green,
+                                theme.textTheme.bodySmall!.color!.blue,
+                                0.6)
+                            : Colors.grey,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
-                ),
-                CustomPopupMenuButton(onDelete: onDelete, onEdite: onEdite),
-              ],
+                ],
+              ),
             ),
-          ),
+            const SizedBox(width: 12),
+            BlocBuilder<SettingsBloc, SettingsState>(
+              builder: (context, state) {
+                final String currency = state.currency ?? '\$';
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Color.fromRGBO(
+                      theme.primaryColor.red,
+                      theme.primaryColor.green,
+                      theme.primaryColor.blue,
+                      0.1,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${tailing ?? '0.00'} $currency',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: theme.primaryColor,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+            CustomPopupMenuButton(onDelete: onDelete, onEdite: onEdite),
+          ],
         ),
       ),
     );

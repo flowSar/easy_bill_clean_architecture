@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constance/colors.dart';
+
 import 'client_Image.dart';
 import 'custom_popup_menu_button.dart';
 
@@ -27,46 +27,79 @@ class ClientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        height: 70,
-        margin: EdgeInsets.symmetric(horizontal: m ?? 10, vertical: 5),
+        margin: EdgeInsets.symmetric(horizontal: m ?? 12, vertical: 6),
         decoration: BoxDecoration(
-            color: bg ?? greyLight,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: Colors.black38,
-            )),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: ClientImage(
-                  cName: title,
-                  w: 55,
-                  h: 55,
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 2,
-                  children: [
-                    Text('Name: $title'),
-                    Text('Email: $subTitle'),
-                  ],
-                ),
-              ),
-              CustomPopupMenuButton(
-                onDelete: onDelete,
-                onEdite: onEdite,
-              ),
-            ],
+          color: bg ?? theme.cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark
+                ? const Color.fromRGBO(255, 255, 255, 0.1)
+                : const Color.fromRGBO(0, 0, 0, 0.05),
+            width: 1,
           ),
+          boxShadow: [
+            if (!isDark)
+              const BoxShadow(
+                color: Color.fromRGBO(0, 0, 0, 0.03),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+          ],
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            ClientImage(
+              cName: title,
+              w: 52,
+              h: 52,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subTitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: theme.textTheme.bodySmall?.color != null
+                          ? Color.fromRGBO(
+                              theme.textTheme.bodySmall!.color!.red,
+                              theme.textTheme.bodySmall!.color!.green,
+                              theme.textTheme.bodySmall!.color!.blue,
+                              0.6)
+                          : Colors.grey,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            CustomPopupMenuButton(
+              onDelete: onDelete,
+              onEdite: onEdite,
+            ),
+          ],
         ),
       ),
     );

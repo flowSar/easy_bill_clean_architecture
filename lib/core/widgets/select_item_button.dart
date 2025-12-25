@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../constance/colors.dart';
-
-
-
 class SelectItemButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String label;
@@ -19,27 +15,45 @@ class SelectItemButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RawMaterialButton(
-      elevation: elevation ?? 6,
-      onPressed: onPressed,
-      padding: EdgeInsets.all(15),
-      fillColor: greyLight,
-      constraints:
-          BoxConstraints(maxWidth: w ?? MediaQuery.of(context).size.width),
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: BorderSide(width: 1, color: Colors.black38)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        textDirection: TextDirection.ltr,
-        spacing: 16,
-        children: [
-          Text(
-            label,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: w ?? double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color.fromRGBO(255, 255, 255, 0.05)
+              : const Color.fromRGBO(158, 158, 158, 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color:
+                isDark ? Colors.white10 : const Color.fromRGBO(0, 0, 0, 0.08),
+            width: 1.5,
           ),
-          Icon(Icons.add),
-        ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Icon(
+              Icons.add_circle_outline_rounded,
+              color: theme.primaryColor,
+              size: 24,
+            ),
+          ],
+        ),
       ),
     );
   }

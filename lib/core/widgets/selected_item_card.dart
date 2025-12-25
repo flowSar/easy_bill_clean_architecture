@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
-import '../constance/colors.dart';
 import 'custom_popup_menu_button.dart';
 
 class SelectedItemCard extends StatelessWidget {
@@ -31,87 +30,118 @@ class SelectedItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // String currency = context.read<SettingsProvider>().currency;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     final double dTax = tax;
     final subTotal = price * quantity;
     final double total = subTotal + (subTotal * dTax) / 100;
+
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 2),
-      height: 76,
+      margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
-          color: bg ?? kCustomCardBg,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: kBorderColor,
-          )),
+        color: bg ?? theme.cardColor,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? Colors.white10 : const Color.fromRGBO(0, 0, 0, 0.05),
+        ),
+        boxShadow: [
+          if (!isDark)
+            const BoxShadow(
+              color: Color.fromRGBO(0, 0, 0, 0.03),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+        ],
+      ),
       child: Padding(
-        padding: EdgeInsets.only(top: 6, bottom: 8, left: 10, right: 4),
+        padding: const EdgeInsets.all(12),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         name,
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        '$quantity X $price',
+                        '${quantity.toStringAsFixed(0)} x ${price.toStringAsFixed(2)}',
                         style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w500),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: theme.textTheme.bodySmall?.color != null
+                              ? Color.fromRGBO(
+                                  theme.textTheme.bodySmall!.color!.red,
+                                  theme.textTheme.bodySmall!.color!.green,
+                                  theme.textTheme.bodySmall!.color!.blue,
+                                  0.6)
+                              : Colors.grey,
+                        ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Tax',
+                        'Tax: $tax%',
                         style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w500),
-                        maxLines: 1,
-                      ),
-                      Text(
-                        '$tax %',
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        barCode,
-                        style: TextStyle(fontSize: 12),
+                          fontSize: 12,
+                          color: theme.textTheme.bodySmall?.color != null
+                              ? Color.fromRGBO(
+                                  theme.textTheme.bodySmall!.color!.red,
+                                  theme.textTheme.bodySmall!.color!.green,
+                                  theme.textTheme.bodySmall!.color!.blue,
+                                  0.5)
+                              : Colors.grey,
+                        ),
                       ),
                       BlocBuilder<SettingsBloc, SettingsState>(
                         builder: (context, state) {
-                          late String currency = 'dh';
-                          currency = state.currency!;
+                          String currency = state.currency ?? '\$';
                           return Text(
-                            '$total $currency',
+                            '${total.toStringAsFixed(2)} $currency',
                             style: TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w500),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                              color: theme.primaryColor,
+                            ),
                           );
                         },
                       ),
                     ],
-                  )
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    barCode,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: theme.textTheme.bodySmall?.color != null
+                          ? Color.fromRGBO(
+                              theme.textTheme.bodySmall!.color!.red,
+                              theme.textTheme.bodySmall!.color!.green,
+                              theme.textTheme.bodySmall!.color!.blue,
+                              0.4)
+                          : Colors.grey,
+                      letterSpacing: 1.1,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Padding(
-              padding: EdgeInsets.only(left: 8),
-              child:
-                  CustomPopupMenuButton(onDelete: onDelete, onEdite: onEdite),
-            )
+            const SizedBox(width: 8),
+            CustomPopupMenuButton(onDelete: onDelete, onEdite: onEdite),
           ],
         ),
       ),

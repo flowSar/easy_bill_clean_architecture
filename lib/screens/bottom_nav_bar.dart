@@ -2,7 +2,7 @@ import 'package:easy_bill_clean_architecture/features/presentation/clients/scree
 import 'package:easy_bill_clean_architecture/features/presentation/invoices/screens/invoice_screen.dart';
 import 'package:easy_bill_clean_architecture/features/presentation/settings/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import '../core/constance/g_constants.dart';
 import '../features/presentation/invoices/screens/new_invoice_screen.dart';
 import '../features/presentation/items/screens/items_screen.dart';
@@ -44,39 +44,46 @@ class _BottomNavBarState extends State<BottomNavBar> {
       resizeToAvoidBottomInset: false,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _screenIndex,
-        selectedItemColor: Colors.deepPurple,
-        unselectedItemColor: Colors.blueGrey,
+        selectedItemColor: Colors.deepPurpleAccent,
+        unselectedItemColor: Colors.grey.shade500,
         showUnselectedLabels: true,
-        unselectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
-        selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 11,
+        ),
         onTap: _handleItemTaped,
-        items: [
+        items: const [
           BottomNavigationBarItem(
-            icon: Icon(
-              Icons.create,
-            ),
+            icon: Icon(Icons.note_add_rounded, size: 26),
+            activeIcon: Icon(Icons.note_add_rounded, size: 28),
             label: 'Invoice',
           ),
           BottomNavigationBarItem(
-              icon: Icon(
-                FontAwesomeIcons.fileInvoice,
-              ),
-              label: 'History'),
+            icon: Icon(Icons.receipt_long_rounded, size: 26),
+            activeIcon: Icon(Icons.receipt_long_rounded, size: 28),
+            label: 'History',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(
-                FontAwesomeIcons.users,
-              ),
-              label: 'Clients'),
+            icon: Icon(Icons.group_rounded, size: 26),
+            activeIcon: Icon(Icons.group_rounded, size: 28),
+            label: 'Clients',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(
-                FontAwesomeIcons.list,
-              ),
-              label: 'Items'),
+            icon: Icon(Icons.category_rounded, size: 26),
+            activeIcon: Icon(Icons.category_rounded, size: 28),
+            label: 'Items',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(
-                Icons.settings,
-              ),
-              label: 'Settings'),
+            icon: Icon(Icons.settings_suggest_rounded, size: 26),
+            activeIcon: Icon(Icons.settings_suggest_rounded, size: 28),
+            label: 'Settings',
+          ),
         ],
       ),
     );

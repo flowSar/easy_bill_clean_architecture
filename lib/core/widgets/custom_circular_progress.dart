@@ -11,18 +11,14 @@ class CustomCircularProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.of(context).size.width;
-    return Container(
-      width: width,
-      height: w! + 10,
-      child: Center(
-        child: SizedBox(
-          height: h ?? 20,
-          width: w ?? 20,
-          child: CircularProgressIndicator(
-            strokeWidth: strokeWidth ?? 4,
-            valueColor: AlwaysStoppedAnimation<Color>(color ?? Colors.red),
-          ),
+    return Center(
+      child: SizedBox(
+        height: h ?? 20,
+        width: w ?? 20,
+        child: CircularProgressIndicator(
+          strokeWidth: strokeWidth ?? 4,
+          valueColor: AlwaysStoppedAnimation<Color>(
+              color ?? Theme.of(context).primaryColor),
         ),
       ),
     );
